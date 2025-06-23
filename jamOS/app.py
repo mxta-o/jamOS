@@ -295,7 +295,7 @@ LANDING_PAGE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>jamOS - The Future of Operating Systems</title>
+    <title>jamOS</title>
     <style>
         * {
             margin: 0;
