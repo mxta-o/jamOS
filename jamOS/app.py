@@ -167,8 +167,8 @@ APPS_PAGE = """
         .app-link {
             display: inline-block;
             padding: 0.8rem 1.5rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
+            background: rgba(176, 196, 222, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             border-radius: 25px;
             font-weight: 600;
@@ -177,7 +177,7 @@ APPS_PAGE = """
 
         .app-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 10px 20px rgba(176, 196, 222, 0.4);
         }
 
         .app-link.disabled {
@@ -229,67 +229,58 @@ APPS_PAGE = """
 
         <div class="apps-grid">
             <div class="app-card">
-                <div class="app-icon">🎵</div>
                 <h3 class="app-title">Rhythm Game Logger</h3>
                 <div class="app-status status-coming-soon">Coming Soon</div>
                 <p class="app-description">
-                    Track your scores and accuracy across all your favorite rhythm games. 
-                    Visualize your improvement over time with beautiful charts and detailed analytics.
+                    for me to track my scores in rhythm games like osu! and robeats mwehehehe
                 </p>
                 <a href="/rhythm-logger" class="app-link disabled">Launch App</a>
             </div>
 
             <div class="app-card">
-                <div class="app-icon">🧠</div>
                 <h3 class="app-title">Brain Dump</h3>
                 <div class="app-status status-coming-soon">Coming Soon</div>
                 <p class="app-description">
-                    Your safe space for jotting down thoughts and feelings as they come up. 
-                    Process emotions, capture ideas, and reflect on your mental journey.
+                    safe space for me to jot down spontaneous thoughts, and talk about them with my best friend later (chatgpt)
                 </p>
                 <a href="/brain-dump" class="app-link disabled">Start Writing</a>
             </div>
 
             <div class="app-card">
-                <div class="app-icon">🍅</div>
                 <h3 class="app-title">Pomodoro Timer</h3>
                 <div class="app-status status-coming-soon">Coming Soon</div>
                 <p class="app-description">
-                    Beautiful, distraction-free timer for when you NEED to focus. 
-                    Study sessions made simple and elegant with ambient sounds and progress tracking.
+                    timer for me to use when i NEEEEED to lock in and focus my attention span is so cooked guys
                 </p>
                 <a href="/pomodoro" class="app-link disabled">Start Session</a>
             </div>
 
             <div class="app-card">
-                <div class="app-icon">⚡</div>
                 <h3 class="app-title">Anti Brainfog Generator</h3>
                 <div class="app-status status-coming-soon">Coming Soon</div>
                 <p class="app-description">
-                    Spontaneous task generator to break you out of mental fog. 
-                    Click for instant motivation and clarity with personalized micro-tasks.
+                    im gonna see if i can turn this into a random popup feature instead of an app so that when im doing random things
+                    i can get a random task to snap me back into place
                 </p>
                 <a href="/brainfog-buster" class="app-link disabled">Get Task</a>
             </div>
 
             <div class="app-card">
-                <div class="app-icon">💌</div>
                 <h3 class="app-title">Letter to Future Me</h3>
                 <div class="app-status status-coming-soon">Coming Soon</div>
                 <p class="app-description">
-                    Create time capsules for your future self. Write letters that will find you 
-                    when you need them most, with customizable delivery dates.
+                    creating time capsulses for my future self to read either for when i need them or just to see
+                    how far ive come, or to reminisce :p
                 </p>
                 <a href="/time-capsule" class="app-link disabled">Write Letter</a>
             </div>
 
             <div class="app-card">
-                <div class="app-icon">🌱</div>
                 <h3 class="app-title">More Apps Coming</h3>
                 <div class="app-status status-coming-soon">In Development</div>
                 <p class="app-description">
-                    This ecosystem is constantly growing. New apps and features are added 
-                    based on real needs and genuine usefulness in your daily life.
+                    errr if im not lazy i might add more apps in the future, but here you can see the roadmap for what
+                    other silly little apps i might add in the future
                 </p>
                 <a href="/roadmap" class="app-link">View Roadmap</a>
             </div>
@@ -651,7 +642,7 @@ def apps():
 
 @app.route('/about-me')
 def about_me():
-    return "<h1>About Me</h1><p>Hi! I'm jam, a software enthusiast exploring the world of Python and Flask.</p>"
+    return "<h1>About Me</h1><p>hi there ! I'm jarlan, or jam as my friends call me, an aspiring software enthusiast exploring the world of Python and Flask.</p>"
 
 @app.route('/brain-dump')
 def brain_dump():
