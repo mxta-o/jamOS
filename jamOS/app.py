@@ -631,6 +631,27 @@ LANDING_PAGE = """
 </body>
 </html>
 """
+ABOUTME_PAGE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jamOS - About Me</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom right, #1A1F36, #3C4E76);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+"""
 
 @app.route('/')
 def home():
@@ -642,7 +663,7 @@ def apps():
 
 @app.route('/about-me')
 def about_me():
-    return "<h1>About Me</h1><p>hi there ! I'm jarlan, or jam as my friends call me, an aspiring software enthusiast exploring the world of Python and Flask.</p>"
+    return render_template_string(ABOUTME_PAGE)
 
 @app.route('/brain-dump')
 def brain_dump():
@@ -669,4 +690,4 @@ def roadmap():
     return "<h1>jamOS Roadmap</h1><p>What's coming next - Coming soon!</p>"
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
