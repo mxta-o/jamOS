@@ -402,60 +402,6 @@ LANDING_PAGE = """
             box-shadow: 0 15px 40px rgba(176, 196, 222, 0.4);
         }
 
-        .features {
-            margin-top: 4rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            max-width: 1000px;
-        }
-
-        .feature {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .feature:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: white;
-        }
-
-        .feature p {
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.5;
-            margin-bottom: 1rem;
-        }
-
-        .feature-link {
-            color: #4ecdc4;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-
-        .feature-link:hover {
-            color: #ff6b6b;
-            transform: translateX(5px);
-        }
-
         .floating-shapes {
             position: absolute;
             top: 0;
@@ -538,11 +484,6 @@ LANDING_PAGE = """
             .cta-buttons {
                 flex-direction: column;
                 align-items: center;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-                margin-top: 2rem;
             }
         }
     </style>
@@ -637,7 +578,7 @@ ABOUTME_PAGE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>jamOS - About Me</title>
+    <title>About - jamOS</title>
     <style>
         * {
             margin: 0;
@@ -649,8 +590,380 @@ ABOUTME_PAGE = """
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(to bottom right, #1A1F36, #3C4E76);
             min-height: 100vh;
+            color: white;
             overflow-x: hidden;
         }
+
+        .navbar {
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-link {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            background: rgba(176, 196, 222);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: rgba(176, 196, 222);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .about-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .about-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .about-section:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: rgba(176, 196, 222);
+        }
+
+        .section-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .highlight {
+            background: rgba(193, 227, 247);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .skill-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1rem;
+            border-radius: 25px;
+            text-align: center;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: rgba(142, 181, 232, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .contact-link {
+            padding: 0.8rem 1.5rem;
+            background: rgba(117, 161, 217);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .contact-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(117, 161, 217, 0.3);
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+            font-size: 2rem;
+        }
+
+        .shape:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        .profile-container {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .profile-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(176, 196, 222, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.05);
+            border-color: rgba(176, 196, 222, 0.8);
+            box-shadow: 0 15px 40px rgba(176, 196, 222, 0.2);
+        }
+
+        .profile-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+            .profile-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .profile-image {
+                width: 150px;
+                height: 150px;
+                margin: 0 auto 1.5rem auto;
+            }
+            .nav-links {
+                display: none;
+            }
+            
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .contact-links {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape">💭</div>
+        <div class="shape">🎯</div>
+        <div class="shape">✨</div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="logo-link">jamOS</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/apps">Apps</a>
+                <a href="/about">About</a>
+                <a href="/roadmap">Roadmap</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">About Me</h1>
+            <p class="page-subtitle">The human behind jamOS</p>
+        </div>
+
+        <div class="about-content">
+            <div class="about-section">
+                <h2 class="section-title">Who I Am</h2>
+                <div class="section-content">
+                    <img src="/static/images/jam.jpg" 
+                    alt="Jarlan (Jam)" 
+                    class="profile-image">
+                <div class="profile-text">
+                    hello :O my name is <span class="highlight">jarlan</span>, or <span class="highlight">jam</span>,
+                    and i'm the creator of jamOS. i'm an aspiring software developer who loves building tools that help
+                    me build better habits and take care of my mental health, and i hope these apps can somewhat
+                    help you too :) i am currently a 2nd year university student studying computer science, equipped
+                    with a passion for coding and dozens of unfinished projects :yum: 
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h2 class="section-title">My Journey</h2>
+                <div class="section-content">
+                    like many others, i've struggled with <span class="highlight">brain fog, procrastination, and 
+                    mental health mishaps</span>. i found myself overwhelmed by daily tasks and often felt lost 
+                    <span class="highlight">staying organized</span>. instead of just dealing with it, i decided to build a <span class="highlight">solution.</span>
+                    jamOS started as a personal project - a tiny simple website just to write about me and play around
+                    with UI development. as i kept building, it evolved into a collection of apps that i needed for myself.
+                    each app is designed to address a specific challenge i faced, whether it was staying focused,
+                    organizing my thoughts, or simply finding motivation. i wanted to create a space where i could
+                    <span class="highlight">experiment, learn, and share </span>my journey with others who might be going through similar struggles.
+                    i hope that by sharing my experiences and the tools i've created, i can help others find their own
+                    path to better mental health and productivity. with that being said, i hope you find these apps
+                    useful in your own journey, and that you <span class="highlight">have fun ! </span>thanks for reading :)
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h2 class="section-title">What I'm Learning</h2>
+                <div class="section-content">
+                    this is actually my <span class="highlight">first actual coding project! </span> i'm learning 
+                    web development through building things i actually want to use. it's been an invigorating 
+                    journey of discovery - from figuring out Flask to designing user experiences that feel 
+                    helpful to me and hopefully to you too.
+                </div>
+                <div class="skills-grid">
+                    <div class="skill-tag">Python & Flask</div>
+                    <div class="skill-tag">HTML & CSS</div>
+                    <div class="skill-tag">JavaScript</div>
+                    <div class="skill-tag">UI/UX Design</div>
+                    <div class="skill-tag">Git & Version Control</div>
+                    <div class="skill-tag">Problem Solving</div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h2 class="section-title">Why jamOS?</h2>
+                <div class="section-content">
+                    some of my friends call me jam as a nickname lols, and as this is a personal project for myself, i
+                    wanted to make it a personal space obviously.
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h2 class="section-title">Let's Connect</h2>
+                <div class="section-content">
+                    i'd love to hear from you! :D whether you have feedback on the apps, want to share your own 
+                    productivity struggles, or just want to say hi - i'm always down to meet and connect with
+                    like-minded people. feel free to reach out through any of the links below :)
+                </div>
+                <div class="contact-links">
+                    <a href="mailto:jaelancruz@yahoo.com" class="contact-link">
+                        send me an email :]
+                    </a>
+                    <a href="https://www.linkedin.com/in/jaelan-cruz/" class="contact-link" target="_blank">
+                        LinkedIn
+                    </a>
+                    <a href="https://github.com/mxta-o" class="contact-link" target="_blank">
+                        GitHub
+                    </a>
+                    <a href="https://guns.lol/jarlan" class="contact-link" target="_blank">
+                        Misc Socials
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 """
 
 @app.route('/')
