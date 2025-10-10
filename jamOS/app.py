@@ -1,4 +1,5 @@
 from flask import Flask, render_template_string
+import time
 
 app = Flask(__name__)
 
@@ -965,7 +966,175 @@ ABOUTME_PAGE = """
 </body>
 </html>
 """
+POMODORO_TIMER = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apps - jamOS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(to bottom right, #1A1F36, #3C4E76);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .navbar {
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-link {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            background: rgba(176, 196, 222);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: rgba(176, 196, 222);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient 3s ease infinite;
+        }
+
+        .pomodoro-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            position: center;
+            text-align: center;
+            margin: 0 auto;
+            width: 70%;
+        }
+
+        .pomodoro-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .pomodoro-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+            
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="logo-link">jamOS</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/apps">Apps</a>
+                <a href="/roadmap">Roadmap</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">jar's pomorodo timer :D</h1>
+            <p class="page-subtitle">
+                simple pomodoro timer to use in case you need to lock in :p
+            </p>
+        </div>
+    </div>
+    <div class="pomodoro-card">
+        <h3 class="pomodoro-title">Pomodoro Timer</h3>
+        <img src="/images/oshawottyay.gif" alt="Pomodoro Timer Icon" class="pomodoro-icon">
+        <a href="/pomodoro" class="app-link disabled">Start Session</a>
+    </div>
+</body>
+</html>
+"""
 @app.route('/')
 def home():
     return render_template_string(LANDING_PAGE)
@@ -988,7 +1157,7 @@ def rhythm_logger():
 
 @app.route('/pomodoro')
 def pomodoro():
-    return "<h1>Pomodoro Timer</h1><p>Focus sessions - Coming soon!</p>"
+    return render_template_string(POMODORO_TIMER)
 
 @app.route('/brainfog-buster')
 def brainfog_buster():
