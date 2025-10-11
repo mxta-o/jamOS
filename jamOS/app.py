@@ -1076,7 +1076,18 @@ POMODORO_TIMER = """
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: white;
+            color: rgba(176, 196, 222);
+        }
+
+        .osha-dance {
+            width: 400px;
+            height: 400px;
+            border-radius: 20%;
+            object-fit: cover;
+            border: 3px solid rgba(176, 196, 222, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
         @keyframes gradient {
@@ -1129,8 +1140,7 @@ POMODORO_TIMER = """
     </div>
     <div class="pomodoro-card">
         <h3 class="pomodoro-title">Pomodoro Timer</h3>
-        <img src="/images/oshawottyay.gif" alt="Pomodoro Timer Icon" class="pomodoro-icon">
-        <a href="/pomodoro" class="app-link disabled">Start Session</a>
+        <img src="/static/images/oshayippie.gif" alt="Pomodoro Timer Icon" class="osha-dance">
     </div>
 </body>
 </html>
