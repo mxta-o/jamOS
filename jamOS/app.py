@@ -249,11 +249,11 @@ APPS_PAGE = """
 
             <div class="app-card">
                 <h3 class="app-title">Pomodoro Timer</h3>
-                <div class="app-status status-coming-soon">Coming Soon</div>
+                <div class="app-status status-ready">Ready</div>
                 <p class="app-description">
                     timer for me to use when i NEEEEED to lock in and focus my attention span is so cooked guys
                 </p>
-                <a href="/pomodoro" class="app-link disabled">Start Session</a>
+                <a href="/pomodoro" class="app-link">Start Session</a>
             </div>
 
             <div class="app-card">
@@ -972,7 +972,7 @@ POMODORO_TIMER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apps - jamOS</title>
+    <title>Pomodoro Timer - jamOS</title>
     <style>
         * {
             margin: 0;
@@ -1029,14 +1029,14 @@ POMODORO_TIMER = """
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 4rem 2rem;
+            padding: 2rem;
         }
 
         .page-header {
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 3rem;
         }
 
         .page-title {
@@ -1049,45 +1049,6 @@ POMODORO_TIMER = """
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: gradient 3s ease infinite;
-        }
-
-        .pomodoro-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            position: center;
-            text-align: center;
-            margin: 0 auto;
-            width: 70%;
-        }
-
-        .pomodoro-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .pomodoro-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: rgba(176, 196, 222);
-        }
-
-        .osha-dance {
-            width: 400px;
-            height: 400px;
-            border-radius: 20%;
-            object-fit: cover;
-            border: 3px solid rgba(176, 196, 222, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            flex-shrink: 0;
         }
 
         @keyframes gradient {
@@ -1103,17 +1064,215 @@ POMODORO_TIMER = """
             margin: 0 auto;
         }
 
+        .pomodoro-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .timer-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            margin: 0 auto;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 2rem 0;
+            color: rgba(176, 196, 222);
+            text-shadow: 0 0 20px rgba(176, 196, 222, 0.3);
+        }
+
+        .session-info {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .session-type {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: rgba(176, 196, 222);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary {
+            background: rgba(76, 175, 80, 0.8);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 193, 7, 0.8);
+        }
+
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.8);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-ring {
+            width: 200px;
+            height: 200px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .progress-ring__circle {
+            stroke: rgba(176, 196, 222, 0.3);
+            stroke-linecap: round;
+            fill: transparent;
+            stroke-width: 8;
+        }
+
+        .progress-ring__circle-progress {
+            stroke: rgba(176, 196, 222, 0.9);
+            stroke-linecap: round;
+            fill: transparent;
+            stroke-width: 8;
+            transition: stroke-dasharray 1s ease;
+        }
+
+        .osha-dance {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(176, 196, 222, 0.3);
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.5rem;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 1rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgba(176, 196, 222);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .motivation-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            margin-top: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .motivation-text {
+            font-size: 1.1rem;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
         @media (max-width: 768px) {
             .page-title {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
             
-            .apps-grid {
-                grid-template-columns: 1fr;
+            .timer-display {
+                font-size: 3rem;
             }
             
             .nav-links {
                 display: none;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .stats-card {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .osha-dance {
+                width: 80px;
+                height: 80px;
+            }
+
+            .progress-ring {
+                width: 160px;
+                height: 160px;
             }
         }
     </style>
@@ -1125,6 +1284,7 @@ POMODORO_TIMER = """
             <div class="nav-links">
                 <a href="/">Home</a>
                 <a href="/apps">Apps</a>
+                <a href="/about-me">About</a>
                 <a href="/roadmap">Roadmap</a>
             </div>
         </div>
@@ -1132,16 +1292,237 @@ POMODORO_TIMER = """
     
     <div class="container">
         <div class="page-header">
-            <h1 class="page-title">jar's pomorodo timer :D</h1>
+            <h1 class="page-title">jar's pomodoro timer :D</h1>
             <p class="page-subtitle">
-                simple pomodoro timer to use in case you need to lock in :p
+                time to lock in and get stuff done! 🍅✨
             </p>
         </div>
+
+        <div class="pomodoro-container">
+            <div class="timer-card">
+                <div class="session-type" id="sessionType">Focus Time</div>
+                <div class="timer-display" id="timerDisplay">25:00</div>
+                
+                <div class="progress-ring">
+                    <svg width="200" height="200">
+                        <circle class="progress-ring__circle" 
+                                cx="100" cy="100" r="90"
+                                stroke-dasharray="565.48" stroke-dashoffset="0"></circle>
+                        <circle class="progress-ring__circle-progress" 
+                                id="progressCircle"
+                                cx="100" cy="100" r="90"
+                                stroke-dasharray="565.48" stroke-dashoffset="565.48"></circle>
+                    </svg>
+                    <img src="/static/images/oshayippie.gif" alt="Motivation" class="osha-dance">
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="startBtn" onclick="startTimer()">Start</button>
+                    <button class="btn btn-secondary" id="pauseBtn" onclick="pauseTimer()" disabled>Pause</button>
+                    <button class="btn btn-danger" id="resetBtn" onclick="resetTimer()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <div class="stat-item">
+                <div class="stat-number" id="completedSessions">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="currentSession">1</div>
+                <div class="stat-label">Current</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalTime">0m</div>
+                <div class="stat-label">Total Time</div>
+            </div>
+        </div>
+
+        <div class="motivation-card">
+            <div class="motivation-text" id="motivationText">
+                ready to focus? let's make this session count! 💪
+            </div>
+        </div>
     </div>
-    <div class="pomodoro-card">
-        <h3 class="pomodoro-title">Pomodoro Timer</h3>
-        <img src="/static/images/oshayippie.gif" alt="Pomodoro Timer Icon" class="osha-dance">
-    </div>
+
+    <script>
+        let timerState = {
+            timeLeft: 25 * 60, // 25 minutes in seconds
+            isRunning: false,
+            isPaused: false,
+            currentSession: 1,
+            completedSessions: 0,
+            totalTimeSpent: 0,
+            isBreak: false,
+            interval: null
+        };
+
+        const motivationMessages = {
+            focus: [
+                "time to lock in! you got this! 💪",
+                "focus mode activated! let's get stuff done ✨",
+                "deep work time! block out distractions 🎯",
+                "you're in the zone now! keep going! 🔥",
+                "productivity mode: ON 🚀"
+            ],
+            break: [
+                "great job! take a well-deserved break 😌",
+                "you earned this break! stretch and relax 🧘‍♀️",
+                "break time! grab some water and reset 💧",
+                "nice work! step away and recharge ⚡",
+                "perfect! let your brain rest for a bit 🧠"
+            ],
+            completed: [
+                "session complete! you're on fire! 🔥",
+                "amazing work! another one done! ⭐",
+                "boom! that's how it's done! 💥",
+                "incredible focus! keep the momentum! 🎉",
+                "you're crushing it! one step closer to your goals! 🏆"
+            ]
+        };
+
+        function updateDisplay() {
+            const minutes = Math.floor(timerState.timeLeft / 60);
+            const seconds = timerState.timeLeft % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update progress circle
+            const totalTime = timerState.isBreak ? 5 * 60 : 25 * 60;
+            const progress = (totalTime - timerState.timeLeft) / totalTime;
+            const circumference = 565.48;
+            const offset = circumference - (progress * circumference);
+            document.getElementById('progressCircle').style.strokeDashoffset = offset;
+            
+            // Update session type
+            document.getElementById('sessionType').textContent = 
+                timerState.isBreak ? 'Break Time' : 'Focus Time';
+            
+            // Update stats
+            document.getElementById('completedSessions').textContent = timerState.completedSessions;
+            document.getElementById('currentSession').textContent = timerState.currentSession;
+            document.getElementById('totalTime').textContent = `${Math.floor(timerState.totalTimeSpent / 60)}m`;
+        }
+
+        function updateMotivation(type = 'focus') {
+            const messages = motivationMessages[type];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById('motivationText').textContent = randomMessage;
+        }
+
+        function startTimer() {
+            if (!timerState.isRunning) {
+                timerState.isRunning = true;
+                timerState.isPaused = false;
+                
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = false;
+                
+                updateMotivation(timerState.isBreak ? 'break' : 'focus');
+                
+                timerState.interval = setInterval(() => {
+                    timerState.timeLeft--;
+                    timerState.totalTimeSpent++;
+                    updateDisplay();
+                    
+                    if (timerState.timeLeft <= 0) {
+                        completeSession();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            if (timerState.isRunning) {
+                timerState.isRunning = false;
+                timerState.isPaused = true;
+                clearInterval(timerState.interval);
+                
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = true;
+                
+                updateMotivation('focus');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerState.interval);
+            timerState.isRunning = false;
+            timerState.isPaused = false;
+            timerState.timeLeft = timerState.isBreak ? 5 * 60 : 25 * 60;
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            
+            updateDisplay();
+            updateMotivation('focus');
+        }
+
+        function completeSession() {
+            clearInterval(timerState.interval);
+            timerState.isRunning = false;
+            
+            updateMotivation('completed');
+            
+            if (!timerState.isBreak) {
+                // Completed a focus session
+                timerState.completedSessions++;
+                timerState.isBreak = true;
+                timerState.timeLeft = 5 * 60; // 5 minute break
+                
+                // Play completion sound (if you want to add audio)
+                // new Audio('/static/sounds/complete.mp3').play();
+                
+                setTimeout(() => {
+                    updateMotivation('break');
+                }, 2000);
+            } else {
+                // Completed a break
+                timerState.isBreak = false;
+                timerState.currentSession++;
+                timerState.timeLeft = 25 * 60; // 25 minute focus session
+                
+                setTimeout(() => {
+                    updateMotivation('focus');
+                }, 2000);
+            }
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            updateDisplay();
+        }
+
+        // Initialize the timer display
+        updateDisplay();
+        updateMotivation('focus');
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (timerState.isRunning) {
+                    pauseTimer();
+                } else {
+                    startTimer();
+                }
+            } else if (e.code === 'KeyR') {
+                e.preventDefault();
+                resetTimer();
+            }
+        });
+
+        // Add visual feedback when timer is running
+        setInterval(() => {
+            if (timerState.isRunning) {
+                const display = document.getElementById('timerDisplay');
+                display.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    display.style.transform = 'scale(1)';
+                }, 100);
+            }
+        }, 1000);
+    </script>
 </body>
 </html>
 """
