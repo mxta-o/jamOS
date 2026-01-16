@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Roadmap - jamOS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">jamOS Roadmap</h1>
+        <p class="page-subtitle">
+            what's coming next (if i'm not lazy) 🚀
+        </p>
+    </div>
+
+    <div style="display: grid; gap: 2rem;">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">✅ Completed</h3>
+                <p class="card-subtitle">Apps that are ready to use</p>
+            </div>
+            <div style="display: grid; gap: 1rem;">
+                <div style="padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border-left: 4px solid rgba(76, 175, 80, 0.8);">
+                    <strong>Pomodoro Timer</strong> - Focus sessions with osha dancing in the progress circle
+                </div>
+                <div style="padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border-left: 4px solid rgba(76, 175, 80, 0.8);">
+                    <strong>Habit Tracker</strong> - Build consistency with daily habit tracking
+                </div>
+                <div style="padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border-left: 4px solid rgba(76, 175, 80, 0.8);">
+                    <strong>Focus Logger</strong> - Log and reflect on your pomodoro sessions
+                </div>
+                <div style="padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border-left: 4px solid rgba(76, 175, 80, 0.8);">
+                    <strong>Time Block Planner</strong> - Plan your day with focused time blocks
+                </div>
+                <div style="padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border-left: 4px solid rgba(76, 175, 80, 0.8);">
+                    <strong>Time Capsules</strong> - Write letters to your future self
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🚧 In Development</h3>
+                <p class="card-subtitle">Features I'm currently working on</p>
+            </div>
+            <div style="display: grid; gap: 1rem;">
+                <div style="padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid rgba(255, 193, 7, 0.8);">
+                    <strong>Database Integration</strong> - Moving from JSON to proper database storage
+                </div>
+                <div style="padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid rgba(255, 193, 7, 0.8);">
+                    <strong>Data Export</strong> - Export your habits, sessions, and progress
+                </div>
+                <div style="padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid rgba(255, 193, 7, 0.8);">
+                    <strong>Dark/Light Theme Toggle</strong> - Because options are nice
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">💭 Ideas for Later</h3>
+                <p class="card-subtitle">Cool stuff that might happen eventually</p>
+            </div>
+            <div style="display: grid; gap: 1rem;">
+                <div style="padding: 1rem; background: rgba(103, 58, 183, 0.1); border-radius: 10px; border-left: 4px solid rgba(103, 58, 183, 0.8);">
+                    <strong>Goal Setting & Tracking</strong> - Set long-term goals and break them into steps
+                </div>
+                <div style="padding: 1rem; background: rgba(103, 58, 183, 0.1); border-radius: 10px; border-left: 4px solid rgba(103, 58, 183, 0.8);">
+                    <strong>Mobile App</strong> - Native iOS/Android apps for on-the-go productivity
+                </div>
+                <div style="padding: 1rem; background: rgba(103, 58, 183, 0.1); border-radius: 10px; border-left: 4px solid rgba(103, 58, 183, 0.8);">
+                    <strong>Social Features</strong> - Share progress with friends for accountability
+                </div>
+                <div style="padding: 1rem; background: rgba(103, 58, 183, 0.1); border-radius: 10px; border-left: 4px solid rgba(103, 58, 183, 0.8);">
+                    <strong>AI Insights</strong> - Get personalized productivity recommendations
+                </div>
+                <div style="padding: 1rem; background: rgba(103, 58, 183, 0.1); border-radius: 10px; border-left: 4px solid rgba(103, 58, 183, 0.8);">
+                    <strong>Spotify Integration</strong> - Focus playlists that sync with your pomodoro sessions
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🤔 Got Ideas?</h3>
+            </div>
+            <p style="line-height: 1.6; opacity: 0.9;">
+                Have suggestions for new features or apps? Found a bug? Just want to say hi? 
+                Hit me up! I'm always excited to hear from people using jamOS and love getting feedback 
+                on what would actually be useful.
+            </p>
+            <div style="margin-top: 1rem;">
+                <a href="mailto:jaelancruz@yahoo.com" class="btn btn-primary">Send Feedback</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

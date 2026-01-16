@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Pomodoro Timer - jamOS{% endblock %}
+
+{% block extra_head %}
+<style>
+    .timer-container {
+        max-width: 500px;
+        margin: 2rem auto;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        color: white;
+    }
+    
+    .timer-display {
+        font-size: 4rem;
+        font-weight: bold;
+        margin: 1rem 0;
+        font-family: 'Monaco', monospace;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .timer-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .timer-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 100px;
+    }
+    
+    .timer-btn.primary {
+        background: #ff6b6b;
+        color: white;
+    }
+    
+    .timer-btn.secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .timer-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .timer-modes {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .mode-btn {
+        padding: 8px 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        background: transparent;
+        color: white;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .mode-btn.active {
+        background: rgba(255,255,255,0.2);
+        border-color: white;
+    }
+    
+    .stats-container {
+        margin-top: 2rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        background: rgba(255,255,255,0.1);
+        padding: 1rem;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .motivation {
+        margin: 2rem 0;
+        font-style: italic;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .osha-gif {
+        margin-top: 1rem;
+        max-width: 200px;
+        border-radius: 10px;
+        display: none;
+    }
+    
+    .osha-gif.show {
+        display: block;
+        margin: 1rem auto;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .timer-display.running {
+        animation: pulse 1s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>🍅 Pomodoro Timer</h1>
+    <p>Stay focused with the Pomodoro Technique</p>
+</div>
+
+<div class="timer-container">
+    <div class="timer-modes">
+        <button class="mode-btn active" data-mode="work" data-duration="25">Work (25m)</button>
+        <button class="mode-btn" data-mode="shortBreak" data-duration="5">Short Break (5m)</button>
+        <button class="mode-btn" data-mode="longBreak" data-duration="15">Long Break (15m)</button>
+    </div>
+    
+    <div class="timer-display" id="timerDisplay">25:00</div>
+    
+    <div class="timer-controls">
+        <button class="timer-btn primary" id="startBtn">Start</button>
+        <button class="timer-btn secondary" id="pauseBtn">Pause</button>
+        <button class="timer-btn secondary" id="resetBtn">Reset</button>
+    </div>
+    
+    <div class="motivation" id="motivation">
+        Ready to focus? Let's make this session count! 💪
+    </div>
+    
+    <img src="{{ url_for('static', filename='images/oshayippie.gif') }}" alt="Celebration" class="osha-gif" id="oshaGif">
+    
+    <div class="stats-container">
+        <div class="stat-item">
+            <span class="stat-number" id="completedSessions">0</span>
+            <span class="stat-label">Completed Today</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="totalMinutes">0</span>
+            <span class="stat-label">Minutes Focused</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="currentStreak">0</span>
+            <span class="stat-label">Current Streak</span>
+        </div>
+    </div>
+</div>
+
+<script>
+class PomodoroTimer {
+    constructor() {
+        this.timeLeft = 25 * 60; // 25 minutes in seconds
+        this.isRunning = false;
+        this.currentMode = 'work';
+        this.timer = null;
+        this.completedSessions = parseInt(localStorage.getItem('pomodoroCompleted') || '0');
+        this.totalMinutes = parseInt(localStorage.getItem('pomodoroMinutes') || '0');
+        this.currentStreak = parseInt(localStorage.getItem('pomodoroStreak') || '0');
+        
+        this.initElements();
+        this.initEventListeners();
+        this.updateDisplay();
+        this.updateStats();
+        this.showMotivationalMessage();
+    }
+    
+    initElements() {
+        this.display = document.getElementById('timerDisplay');
+        this.startBtn = document.getElementById('startBtn');
+        this.pauseBtn = document.getElementById('pauseBtn');
+        this.resetBtn = document.getElementById('resetBtn');
+        this.motivation = document.getElementById('motivation');
+        this.oshaGif = document.getElementById('oshaGif');
+        this.modeButtons = document.querySelectorAll('.mode-btn');
+    }
+    
+    initEventListeners() {
+        this.startBtn.addEventListener('click', () => this.start());
+        this.pauseBtn.addEventListener('click', () => this.pause());
+        this.resetBtn.addEventListener('click', () => this.reset());
+        
+        this.modeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchMode(e.target.dataset.mode, parseInt(e.target.dataset.duration));
+            });
+        });
+    }
+    
+    start() {
+        if (!this.isRunning) {
+            this.isRunning = true;
+            this.display.classList.add('running');
+            this.timer = setInterval(() => this.tick(), 1000);
+            this.startBtn.textContent = 'Running...';
+        }
+    }
+    
+    pause() {
+        if (this.isRunning) {
+            this.isRunning = false;
+            this.display.classList.remove('running');
+            clearInterval(this.timer);
+            this.startBtn.textContent = 'Resume';
+        }
+    }
+    
+    reset() {
+        this.pause();
+        const activeMode = document.querySelector('.mode-btn.active');
+        this.timeLeft = parseInt(activeMode.dataset.duration) * 60;
+        this.updateDisplay();
+        this.startBtn.textContent = 'Start';
+        this.oshaGif.classList.remove('show');
+    }
+    
+    switchMode(mode, duration) {
+        this.pause();
+        this.currentMode = mode;
+        this.timeLeft = duration * 60;
+        
+        // Update active mode button
+        this.modeButtons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        this.updateDisplay();
+        this.startBtn.textContent = 'Start';
+        this.showMotivationalMessage();
+    }
+    
+    tick() {
+        if (this.timeLeft > 0) {
+            this.timeLeft--;
+            this.updateDisplay();
+        } else {
+            this.complete();
+        }
+    }
+    
+    complete() {
+        this.pause();
+        this.playCompletionSound();
+        this.oshaGif.classList.add('show');
+        
+        if (this.currentMode === 'work') {
+            this.completedSessions++;
+            this.totalMinutes += 25;
+            this.currentStreak++;
+            this.saveStats();
+            this.updateStats();
+            this.motivation.textContent = "🎉 Great work! Time for a well-deserved break!";
+        } else {
+            this.motivation.textContent = "☕ Break's over! Ready to focus again?";
+        }
+        
+        // Auto-switch to next mode
+        setTimeout(() => {
+            if (this.currentMode === 'work') {
+                const nextMode = this.completedSessions % 4 === 0 ? 'longBreak' : 'shortBreak';
+                const duration = nextMode === 'longBreak' ? 15 : 5;
+                this.switchMode(nextMode, duration);
+                this.modeButtons.forEach(btn => {
+                    if (btn.dataset.mode === nextMode) {
+                        btn.click();
+                    }
+                });
+            } else {
+                this.switchMode('work', 25);
+                this.modeButtons[0].click();
+            }
+        }, 3000);
+    }
+    
+    updateDisplay() {
+        const minutes = Math.floor(this.timeLeft / 60);
+        const seconds = this.timeLeft % 60;
+        this.display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    updateStats() {
+        document.getElementById('completedSessions').textContent = this.completedSessions;
+        document.getElementById('totalMinutes').textContent = this.totalMinutes;
+        document.getElementById('currentStreak').textContent = this.currentStreak;
+    }
+    
+    saveStats() {
+        localStorage.setItem('pomodoroCompleted', this.completedSessions.toString());
+        localStorage.setItem('pomodoroMinutes', this.totalMinutes.toString());
+        localStorage.setItem('pomodoroStreak', this.currentStreak.toString());
+    }
+    
+    showMotivationalMessage() {
+        const messages = {
+            work: [
+                "Ready to focus? Let's make this session count! 💪",
+                "Time to dive deep and get things done! 🚀",
+                "Focus mode activated! You've got this! ⚡",
+                "Let's turn this session into progress! 🎯",
+                "Deep work time! Make every minute matter! 🔥"
+            ],
+            shortBreak: [
+                "Take a breather! You've earned it! 😌",
+                "Quick break time - stretch and relax! 🧘",
+                "5 minutes to recharge your batteries! 🔋",
+                "Mini break mode: rest and reset! ☕"
+            ],
+            longBreak: [
+                "Long break time! Go for a walk! 🚶",
+                "15 minutes to fully recharge! 🌟",
+                "Extended break - treat yourself! 🎉",
+                "Time for a proper break! You've earned it! 🏆"
+            ]
+        };
+        
+        const modeMessages = messages[this.currentMode];
+        const randomMessage = modeMessages[Math.floor(Math.random() * modeMessages.length)];
+        this.motivation.textContent = randomMessage;
+    }
+    
+    playCompletionSound() {
+        // Simple audio notification (you can replace with actual audio file)
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(this.currentMode === 'work' ? 'Time for a break!' : 'Back to work!');
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
+            speechSynthesis.speak(utterance);
+        }
+    }
+}
+
+// Initialize timer when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new PomodoroTimer();
+});
+</script>
+{% endblock %}
