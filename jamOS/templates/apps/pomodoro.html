@@ -2,140 +2,6 @@
 
 {% block title %}Pomodoro Timer - jamOS{% endblock %}
 
-{% block extra_head %}
-<style>
-    .timer-container {
-        max-width: 500px;
-        margin: 2rem auto;
-        text-align: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        color: white;
-    }
-    
-    .timer-display {
-        font-size: 4rem;
-        font-weight: bold;
-        margin: 1rem 0;
-        font-family: 'Monaco', monospace;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .timer-controls {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin: 2rem 0;
-    }
-    
-    .timer-btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 25px;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 100px;
-    }
-    
-    .timer-btn.primary {
-        background: #ff6b6b;
-        color: white;
-    }
-    
-    .timer-btn.secondary {
-        background: rgba(255,255,255,0.2);
-        color: white;
-        backdrop-filter: blur(10px);
-    }
-    
-    .timer-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-    
-    .timer-modes {
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .mode-btn {
-        padding: 8px 16px;
-        border: 2px solid rgba(255,255,255,0.3);
-        background: transparent;
-        color: white;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .mode-btn.active {
-        background: rgba(255,255,255,0.2);
-        border-color: white;
-    }
-    
-    .stats-container {
-        margin-top: 2rem;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 1rem;
-    }
-    
-    .stat-item {
-        background: rgba(255,255,255,0.1);
-        padding: 1rem;
-        border-radius: 10px;
-        backdrop-filter: blur(10px);
-    }
-    
-    .stat-number {
-        font-size: 1.5rem;
-        font-weight: bold;
-        display: block;
-    }
-    
-    .stat-label {
-        font-size: 0.8rem;
-        opacity: 0.8;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    .motivation {
-        margin: 2rem 0;
-        font-style: italic;
-        opacity: 0.9;
-        font-size: 1.1rem;
-    }
-    
-    .osha-gif {
-        margin-top: 1rem;
-        max-width: 200px;
-        border-radius: 10px;
-        display: none;
-    }
-    
-    .osha-gif.show {
-        display: block;
-        margin: 1rem auto;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-    }
-    
-    .timer-display.running {
-        animation: pulse 1s infinite;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="hero-section">
     <h1>🍅 Pomodoro Timer</h1>
@@ -149,19 +15,39 @@
         <button class="mode-btn" data-mode="longBreak" data-duration="15">Long Break (15m)</button>
     </div>
     
-    <div class="timer-display" id="timerDisplay">25:00</div>
+    <div class="circular-timer">
+        <div class="timer-ring">
+            <svg class="progress-ring" width="300" height="300">
+                <defs>
+                    <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <circle class="bg-ring" cx="150" cy="150" r="130" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"></circle>
+                <circle class="progress-ring-fill" id="progressRing" cx="150" cy="150" r="130" 
+                        fill="none" stroke="url(#timerGradient)" stroke-width="10" 
+                        stroke-linecap="round" stroke-dasharray="816.8" stroke-dashoffset="816.8"
+                        transform="rotate(-90 150 150)"></circle>
+            </svg>
+        </div>
+        
+        <div class="timer-center">
+            <img src="{{ url_for('static', filename='images/oshayippie.gif') }}" 
+                 alt="Oshawott" class="oshawott-gif" id="oshaGif">
+            <div class="timer-display" id="timerDisplay">25:00</div>
+        </div>
+    </div>
     
     <div class="timer-controls">
         <button class="timer-btn primary" id="startBtn">Start</button>
         <button class="timer-btn secondary" id="pauseBtn">Pause</button>
-        <button class="timer-btn secondary" id="resetBtn">Reset</button>
+        <button class="timer-btn danger" id="resetBtn">Reset</button>
     </div>
     
     <div class="motivation" id="motivation">
         Ready to focus? Let's make this session count! 💪
     </div>
-    
-    <img src="{{ url_for('static', filename='images/oshayippie.gif') }}" alt="Celebration" class="osha-gif" id="oshaGif">
     
     <div class="stats-container">
         <div class="stat-item">
@@ -205,6 +91,7 @@ class PomodoroTimer {
         this.motivation = document.getElementById('motivation');
         this.oshaGif = document.getElementById('oshaGif');
         this.modeButtons = document.querySelectorAll('.mode-btn');
+        this.progressRing = document.getElementById('progressRing');
     }
     
     initEventListeners() {
@@ -225,6 +112,8 @@ class PomodoroTimer {
             this.display.classList.add('running');
             this.timer = setInterval(() => this.tick(), 1000);
             this.startBtn.textContent = 'Running...';
+            this.startBtn.disabled = true;
+            this.pauseBtn.disabled = false;
         }
     }
     
@@ -234,6 +123,8 @@ class PomodoroTimer {
             this.display.classList.remove('running');
             clearInterval(this.timer);
             this.startBtn.textContent = 'Resume';
+            this.startBtn.disabled = false;
+            this.pauseBtn.disabled = true;
         }
     }
     
@@ -243,7 +134,9 @@ class PomodoroTimer {
         this.timeLeft = parseInt(activeMode.dataset.duration) * 60;
         this.updateDisplay();
         this.startBtn.textContent = 'Start';
-        this.oshaGif.classList.remove('show');
+        this.startBtn.disabled = false;
+        this.pauseBtn.disabled = true;
+        this.oshaGif.classList.remove('celebration');
     }
     
     switchMode(mode, duration) {
@@ -257,6 +150,8 @@ class PomodoroTimer {
         
         this.updateDisplay();
         this.startBtn.textContent = 'Start';
+        this.startBtn.disabled = false;
+        this.pauseBtn.disabled = true;
         this.showMotivationalMessage();
     }
     
@@ -272,7 +167,7 @@ class PomodoroTimer {
     complete() {
         this.pause();
         this.playCompletionSound();
-        this.oshaGif.classList.add('show');
+        this.oshaGif.classList.add('celebration');
         
         if (this.currentMode === 'work') {
             this.completedSessions++;
@@ -290,23 +185,44 @@ class PomodoroTimer {
             if (this.currentMode === 'work') {
                 const nextMode = this.completedSessions % 4 === 0 ? 'longBreak' : 'shortBreak';
                 const duration = nextMode === 'longBreak' ? 15 : 5;
-                this.switchMode(nextMode, duration);
-                this.modeButtons.forEach(btn => {
-                    if (btn.dataset.mode === nextMode) {
-                        btn.click();
-                    }
-                });
+                this.autoSwitchMode(nextMode, duration);
             } else {
-                this.switchMode('work', 25);
-                this.modeButtons[0].click();
+                this.autoSwitchMode('work', 25);
             }
+            this.oshaGif.classList.remove('celebration');
         }, 3000);
+    }
+    
+    autoSwitchMode(mode, duration) {
+        this.currentMode = mode;
+        this.timeLeft = duration * 60;
+        
+        // Update active mode button
+        this.modeButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.mode === mode) {
+                btn.classList.add('active');
+            }
+        });
+        
+        this.updateDisplay();
+        this.startBtn.textContent = 'Start';
+        this.startBtn.disabled = false;
+        this.pauseBtn.disabled = true;
+        this.showMotivationalMessage();
     }
     
     updateDisplay() {
         const minutes = Math.floor(this.timeLeft / 60);
         const seconds = this.timeLeft % 60;
         this.display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Update circular progress
+        const totalTime = this.currentMode === 'work' ? 25 * 60 : (this.currentMode === 'shortBreak' ? 5 * 60 : 15 * 60);
+        const progress = (totalTime - this.timeLeft) / totalTime;
+        const circumference = 2 * Math.PI * 130; // radius = 130
+        const offset = circumference - (progress * circumference);
+        this.progressRing.style.strokeDashoffset = offset;
     }
     
     updateStats() {
@@ -350,7 +266,7 @@ class PomodoroTimer {
     }
     
     playCompletionSound() {
-        // Simple audio notification (you can replace with actual audio file)
+        // Simple audio notification
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(this.currentMode === 'work' ? 'Time for a break!' : 'Back to work!');
             utterance.rate = 0.8;
