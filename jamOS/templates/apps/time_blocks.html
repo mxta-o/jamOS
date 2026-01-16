@@ -390,10 +390,10 @@
                         {% set hour_blocks = blocks|selectattr('start_time', 'match', time_str[:2])|list %}
                         {% if hour_blocks %}
                             {% for block in hour_blocks %}
-                            <div class="time-block category-{{ block.category }}" data-id="{{ loop.index0 }}">
+                            <div class="time-block category-{{ block.category }}" data-block-id="{{ loop.index0 }}">
                                 <div class="block-actions">
-                                    <button class="btn-block-action" onclick="editBlock({{ loop.index0 }})">✏️</button>
-                                    <button class="btn-block-action" onclick="deleteBlock({{ loop.index0 }})">🗑️</button>
+                                    <button class="btn-block-action btn-edit" data-block-id="{{ loop.index0 }}">✏️</button>
+                                    <button class="btn-block-action btn-delete" data-block-id="{{ loop.index0 }}">🗑️</button>
                                 </div>
                                 <div class="block-title">{{ block.title }}</div>
                                 <div class="block-duration">
@@ -561,6 +561,17 @@ document.getElementById('start_time').addEventListener('change', function() {
 // Update color preview on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateColorPreview();
+    
+    // Add event listeners for edit and delete buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-edit')) {
+            const blockId = e.target.getAttribute('data-block-id');
+            editBlock(blockId);
+        } else if (e.target.classList.contains('btn-delete')) {
+            const blockId = e.target.getAttribute('data-block-id');
+            deleteBlock(blockId);
+        }
+    });
 });
 </script>
 {% endblock %}
