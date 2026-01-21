@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Focus Logger - jamOS{% endblock %}
+
+{% block extra_head %}
+<style>
+    .focus-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .session-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.5rem;
+        border-radius: 15px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .add-session-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        margin-bottom: 3rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group label {
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px;
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+    
+    .sessions-list {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .sessions-header {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e1e1e1;
+    }
+    
+    .sessions-header h3 {
+        margin: 0;
+        color: #333;
+    }
+    
+    .session-item {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1rem;
+        align-items: start;
+    }
+    
+    .session-item:last-child {
+        border-bottom: none;
+    }
+    
+    .session-duration {
+        background: #667eea;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        text-align: center;
+        min-width: 80px;
+    }
+    
+    .session-content {
+        flex-grow: 1;
+    }
+    
+    .session-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .session-notes {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+    
+    .session-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #999;
+    }
+    
+    .session-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-small {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+    }
+    
+    .btn-small.danger {
+        background: #ff6b6b;
+        color: white;
+    }
+    
+    .btn-small:hover {
+        opacity: 0.8;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+    
+    .empty-state img {
+        max-width: 150px;
+        opacity: 0.5;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-tab {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e1e1e1;
+        background: transparent;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-tab.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>📊 Focus Logger</h1>
+    <p>Track your productive sessions and analyze your focus patterns</p>
+</div>
+
+<div class="focus-container">
+    <!-- Stats Overview -->
+    <div class="session-stats">
+        <div class="stat-card">
+            <span class="stat-number" id="totalSessions">{{ sessions|length }}</span>
+            <span class="stat-label">Total Sessions</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number" id="totalHours">
+                {% set total_minutes = sessions|sum(attribute='duration') %}
+                {{ "%.1f"|format(total_minutes / 60) }}h
+            </span>
+            <span class="stat-label">Total Hours</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number" id="avgSession">
+                {% if sessions %}
+                    {{ "%.0f"|format(sessions|sum(attribute='duration') / sessions|length) }}m
+                {% else %}
+                    0m
+                {% endif %}
+            </span>
+            <span class="stat-label">Avg Session</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number" id="todaySessions">
+                {% set today_sessions = sessions|selectattr('date', 'equalto', today)|list %}
+                {{ today_sessions|length }}
+            </span>
+            <span class="stat-label">Today's Sessions</span>
+        </div>
+    </div>
+
+    <!-- Add New Session Form -->
+    <div class="add-session-form">
+        <h3>Log a Focus Session</h3>
+        <form method="POST" action="{{ url_for('productivity.add_focus_session') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="title">Session Title</label>
+                    <input type="text" id="title" name="title" required placeholder="What did you work on?">
+                </div>
+                <div class="form-group">
+                    <label for="duration">Duration (minutes)</label>
+                    <input type="number" id="duration" name="duration" required min="1" max="480" placeholder="25">
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="work">Work</option>
+                        <option value="study">Study</option>
+                        <option value="creative">Creative</option>
+                        <option value="reading">Reading</option>
+                        <option value="planning">Planning</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" required value="{{ today }}">
+                </div>
+                <div class="form-group">
+                    <label for="time">Time Started</label>
+                    <input type="time" id="time" name="time" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="notes">Session Notes</label>
+                    <textarea id="notes" name="notes" placeholder="What went well? Any insights or learnings?"></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Add Session</button>
+        </form>
+    </div>
+
+    <!-- Sessions List -->
+    <div class="sessions-list">
+        <div class="sessions-header">
+            <h3>Recent Sessions</h3>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="work">Work</button>
+                <button class="filter-tab" data-filter="study">Study</button>
+                <button class="filter-tab" data-filter="creative">Creative</button>
+                <button class="filter-tab" data-filter="reading">Reading</button>
+            </div>
+        </div>
+        
+        {% if sessions %}
+            {% for session in sessions|sort(attribute='datetime', reverse=true) %}
+            <div class="session-item" data-category="{{ session.category }}">
+                <div class="session-duration">{{ session.duration }}m</div>
+                <div class="session-content">
+                    <div class="session-title">{{ session.title }}</div>
+                    {% if session.notes %}
+                    <div class="session-notes">{{ session.notes }}</div>
+                    {% endif %}
+                    <div class="session-meta">
+                        <span>📅 {{ session.date }}</span>
+                        <span>🕐 {{ session.time }}</span>
+                        <span>🏷️ {{ session.category.title() }}</span>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <form method="POST" action="{{ url_for('productivity.delete_focus_session') }}" style="display: inline;">
+                        <input type="hidden" name="session_id" value="{{ loop.index0 }}">
+                        <button type="submit" class="btn-small danger" 
+                                onclick="return confirm('Delete this session?')">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div>📊</div>
+                <h3>No sessions logged yet</h3>
+                <p>Start by adding your first focus session above!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const sessionItems = document.querySelectorAll('.session-item');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            
+            // Update active tab
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter sessions
+            sessionItems.forEach(item => {
+                if (filter === 'all' || item.dataset.category === filter) {
+                    item.style.display = 'grid';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Auto-fill current time
+    const timeInput = document.getElementById('time');
+    const now = new Date();
+    const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                       now.getMinutes().toString().padStart(2, '0');
+    timeInput.value = currentTime;
+});
+</script>
+{% endblock %}

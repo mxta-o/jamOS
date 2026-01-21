@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+
+{% block title %}Time Capsule - jamOS{% endblock %}
+
+{% block extra_head %}
+<style>
+    .capsule-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .capsule-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .create-capsule {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        color: white;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    
+    .create-capsule h3 {
+        margin: 0 0 1.5rem 0;
+        font-size: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        opacity: 0.9;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 10px;
+        font-size: 1rem;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: rgba(255,255,255,0.7);
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: white;
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .btn-capsule {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 12px 24px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .btn-capsule:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: white;
+        transform: translateY(-2px);
+    }
+    
+    .capsules-overview {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    
+    .overview-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #667eea;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 0.5rem;
+    }
+    
+    .capsule-list {
+        margin-top: 3rem;
+    }
+    
+    .capsule-item {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .capsule-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .capsule-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+    }
+    
+    .capsule-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .capsule-dates {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .capsule-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .status-sealed {
+        background: rgba(255,255,255,0.2);
+        color: white;
+    }
+    
+    .status-ready {
+        background: #28a745;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .capsule-content {
+        padding: 2rem;
+    }
+    
+    .capsule-message {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #333;
+        margin-bottom: 1.5rem;
+        font-style: italic;
+    }
+    
+    .capsule-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+    
+    .btn-small {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #ff6b6b;
+        color: white;
+    }
+    
+    .btn-small:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #666;
+    }
+    
+    .empty-state .emoji {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .countdown-timer {
+        background: rgba(255,255,255,0.1);
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 1rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .countdown-label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .countdown-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        font-family: 'Monaco', monospace;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .revealed-content {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+        border-left: 4px solid #28a745;
+    }
+    
+    .reveal-date {
+        color: #28a745;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>⏳ Time Capsule</h1>
+    <p>Leave messages for your future self and rediscover them when the time is right</p>
+</div>
+
+<div class="capsule-container">
+    <div class="capsule-grid">
+        <!-- Create New Capsule -->
+        <div class="create-capsule">
+            <h3>📝 Create Time Capsule</h3>
+            <form method="POST" action="{{ url_for('productivity.add_time_capsule') }}">
+                <div class="form-group">
+                    <label for="title">Capsule Title</label>
+                    <input type="text" id="title" name="title" required 
+                           placeholder="What would you like to remember?">
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message to Future Self</label>
+                    <textarea id="message" name="message" required 
+                              placeholder="Dear future me..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="open_date">Open Date</label>
+                    <input type="date" id="open_date" name="open_date" required min="{{ today }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="personal">Personal Reflection</option>
+                        <option value="goals">Goals & Dreams</option>
+                        <option value="memories">Memories</option>
+                        <option value="advice">Advice</option>
+                        <option value="gratitude">Gratitude</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-capsule">🔒 Seal Capsule</button>
+            </form>
+            
+            <div class="countdown-timer">
+                <div class="countdown-label">Next capsule opens in</div>
+                <div class="countdown-value" id="nextCapsuleCountdown">
+                    {% if next_capsule_date %}
+                        <span data-date="{{ next_capsule_date }}">Calculating...</span>
+                    {% else %}
+                        No sealed capsules
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Overview Stats -->
+        <div class="capsules-overview">
+            <h3>📊 Your Capsules</h3>
+            <div class="overview-stats">
+                <div class="stat-item">
+                    <span class="stat-number">{{ capsules|length }}</span>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">
+                        {{ capsules|selectattr('status', 'equalto', 'sealed')|list|length }}
+                    </span>
+                    <div class="stat-label">Sealed</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">
+                        {{ capsules|selectattr('status', 'equalto', 'ready')|list|length }}
+                    </span>
+                    <div class="stat-label">Ready</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">
+                        {{ capsules|selectattr('status', 'equalto', 'opened')|list|length }}
+                    </span>
+                    <div class="stat-label">Opened</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; color: #666; font-style: italic;">
+                "The best time to plant a tree was 20 years ago.<br>
+                The second best time is now."
+            </div>
+        </div>
+    </div>
+    
+    <!-- Capsules List -->
+    <div class="capsule-list">
+        {% if capsules %}
+            {% for capsule in capsules|sort(attribute='open_date') %}
+            <div class="capsule-item">
+                <div class="capsule-header">
+                    <div class="capsule-status status-{{ capsule.status }}">
+                        {% if capsule.status == 'sealed' %}🔒 Sealed
+                        {% elif capsule.status == 'ready' %}🎁 Ready
+                        {% else %}📖 Opened
+                        {% endif %}
+                    </div>
+                    <div class="capsule-title">{{ capsule.title }}</div>
+                    <div class="capsule-dates">
+                        <span>Created: {{ capsule.created_date }}</span>
+                        <span>Opens: {{ capsule.open_date }}</span>
+                    </div>
+                </div>
+                
+                <div class="capsule-content">
+                    {% if capsule.status == 'opened' or (capsule.open_date <= today) %}
+                        {% if capsule.status != 'opened' %}
+                            <div class="revealed-content">
+                                <div class="reveal-date">✨ Revealed on {{ today }}!</div>
+                            </div>
+                        {% endif %}
+                        <div class="capsule-message">{{ capsule.message }}</div>
+                        <div style="color: #666; font-size: 0.9rem;">
+                            📂 {{ capsule.category.replace('_', ' ').title() }} • 
+                            ⏱️ {{ capsule.days_since_created or 0 }} days ago
+                        </div>
+                        
+                        <div class="capsule-actions">
+                            {% if capsule.status != 'opened' %}
+                                <form method="POST" action="{{ url_for('productivity.open_capsule') }}" style="display: inline;">
+                                    <input type="hidden" name="capsule_id" value="{{ loop.index0 }}">
+                                    <button type="submit" class="btn-small btn-primary">🎁 Open Capsule</button>
+                                </form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('productivity.delete_capsule') }}" style="display: inline;">
+                                <input type="hidden" name="capsule_id" value="{{ loop.index0 }}">
+                                <button type="submit" class="btn-small btn-danger" 
+                                        onclick="return confirm('Delete this capsule forever?')">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                            <div>This capsule is sealed until {{ capsule.open_date }}</div>
+                            <div style="font-size: 0.9rem; margin-top: 0.5rem;">
+                                {{ capsule.days_until_open }} days remaining
+                            </div>
+                        </div>
+                        
+                        <div class="capsule-actions">
+                            <form method="POST" action="{{ url_for('productivity.delete_capsule') }}" style="display: inline;">
+                                <input type="hidden" name="capsule_id" value="{{ loop.index0 }}">
+                                <button type="submit" class="btn-small btn-danger" 
+                                        onclick="return confirm('Delete this sealed capsule?')">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span class="emoji">⏳</span>
+                <h3>No time capsules yet</h3>
+                <p>Create your first capsule above and leave a message for your future self!</p>
+                <p><em>Perfect for goals, memories, or words of encouragement.</em></p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Set minimum date to tomorrow
+document.addEventListener('DOMContentLoaded', function() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const minDate = tomorrow.toISOString().split('T')[0];
+    document.getElementById('open_date').min = minDate;
+    
+    // Update countdown timer
+    function updateCountdown() {
+        const countdownElement = document.getElementById('nextCapsuleCountdown');
+        const dateSpan = countdownElement.querySelector('[data-date]');
+        
+        if (dateSpan) {
+            const targetDate = new Date(dateSpan.dataset.date);
+            const now = new Date();
+            const diff = targetDate - now;
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                if (days > 0) {
+                    countdownElement.textContent = `${days}d ${hours}h ${minutes}m`;
+                } else if (hours > 0) {
+                    countdownElement.textContent = `${hours}h ${minutes}m`;
+                } else {
+                    countdownElement.textContent = `${minutes}m`;
+                }
+            } else {
+                countdownElement.textContent = 'Ready to open!';
+            }
+        }
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 60000); // Update every minute
+});
+</script>
+{% endblock %}

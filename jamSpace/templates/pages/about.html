@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}About - jamSpace{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">About Me</h1>
+        <p class="page-subtitle">The human behind jamSpace</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 3rem;">
+        <div class="card">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: rgba(176, 196, 222);">Who I Am</h2>
+            <div style="line-height: 1.8; font-size: 1.1rem; opacity: 0.9; display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                <img src="/static/images/jam.jpg" 
+                     alt="Jarlan (Jam)" 
+                     style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(176, 196, 222, 0.5); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; flex-shrink: 0;">
+                <div style="flex: 1; min-width: 300px;">
+                    hello :O my name is <span style="background: rgba(193, 227, 247); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;">jarlan</span>, or <span style="background: rgba(193, 227, 247); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;">jam</span>,
+                    and i'm the creator of jamSpace. i'm an aspiring software developer who loves building tools that help
+                    me build better habits and take care of my mental health, and i hope these apps can somewhat
+                    help you too :) i am currently a 2nd year university student studying computer science, equipped
+                    with a passion for coding and dozens of unfinished projects :yum: 
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: rgba(176, 196, 222);">My Journey</h2>
+            <div style="line-height: 1.8; font-size: 1.1rem; opacity: 0.9;">
+                like many others, i've struggled with <span style="background: rgba(193, 227, 247); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;">brain fog, procrastination, and 
+                mental health mishaps</span>. i found myself overwhelmed by daily tasks and often felt lost 
+                <span style="background: rgba(193, 227, 247); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;">staying organized</span>. instead of just dealing with it, i decided to build a <span style="background: rgba(193, 227, 247); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;">solution.</span>
+                jamSpace started as a personal project - a tiny simple website just to write about me and play around
+                with UI development. as i kept building, it evolved into a collection of apps that i needed for myself.
+                each app is designed to address a specific challenge i faced, whether it was staying focused,
+                organizing my thoughts, or simply finding motivation.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: rgba(176, 196, 222);">What I'm Learning</h2>
+            <div style="line-height: 1.8; font-size: 1.1rem; opacity: 0.9;">
+                this is actually my <span style="background: rgba(193, 227, 247); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;">first actual coding project! </span> i'm learning 
+                web development through building things i actually want to use. it's been an invigorating 
+                journey of discovery - from figuring out Flask to designing user experiences that feel 
+                helpful to me and hopefully to you too.
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 0.8rem 1rem; border-radius: 25px; text-align: center; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;">Python & Flask</div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 0.8rem 1rem; border-radius: 25px; text-align: center; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;">HTML & CSS</div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 0.8rem 1rem; border-radius: 25px; text-align: center; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;">JavaScript</div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 0.8rem 1rem; border-radius: 25px; text-align: center; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;">UI/UX Design</div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 0.8rem 1rem; border-radius: 25px; text-align: center; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;">Git & Version Control</div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 0.8rem 1rem; border-radius: 25px; text-align: center; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;">Problem Solving</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: rgba(176, 196, 222);">Let's Connect</h2>
+            <div style="line-height: 1.8; font-size: 1.1rem; opacity: 0.9;">
+                i'd love to hear from you! :D whether you have feedback on the apps, want to share your own 
+                productivity struggles, or just want to say hi - i'm always down to meet and connect with
+                like-minded people. feel free to reach out through any of the links below :)
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                <a href="mailto:jaelancruz@yahoo.com" style="padding: 0.8rem 1.5rem; background: rgba(117, 161, 217); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">send me an email :]</a>
+                <a href="https://www.linkedin.com/in/jaelan-cruz/" target="_blank" style="padding: 0.8rem 1.5rem; background: rgba(117, 161, 217); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">LinkedIn</a>
+                <a href="https://github.com/mxta-o" target="_blank" style="padding: 0.8rem 1.5rem; background: rgba(117, 161, 217); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">GitHub</a>
+                <a href="https://guns.lol/jarlan" target="_blank" style="padding: 0.8rem 1.5rem; background: rgba(117, 161, 217); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">Misc Socials</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

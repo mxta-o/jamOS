@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div class="hero" style="text-align: center; max-width: 800px;">
+        <h1 style="font-size: 4rem; font-weight: 800; margin-bottom: 1rem; background: rgba(176, 196, 222, 0.9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradient 3s ease infinite;">jamSpace</h1>
+        <p style="font-size: 1.5rem; margin-bottom: 2rem; opacity: 0.9; font-weight: 300;">welcome :D</p>
+        <p style="font-size: 1.2rem; line-height: 1.6; margin-bottom: 3rem; opacity: 0.8;">
+            helloo ! this is jamSpace, a collection of productivity apps to help you build better habits, 
+            stay focused, and track your progress. built with Flask and lots of coffee ☕
+        </p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('main.apps') }}" class="btn btn-primary" style="background: rgba(176, 196, 222, 0.8); border-radius: 50px; font-size: 1.1rem;">Explore Apps</a>
+            <a href="{{ url_for('main.about_me') }}" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50px; font-size: 1.1rem;">About Me</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
