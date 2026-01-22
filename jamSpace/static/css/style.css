@@ -325,7 +325,7 @@ body {
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #4D6B87; opacity: 1;
+    color: rgba(176, 196, 222, 0.9);
 }
 
 .hero-section p {
@@ -1125,7 +1125,7 @@ body {
     font-weight: bold;
     font-family: 'Monaco', monospace;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    color: #4D6B87; opacity: 1;
+    color: rgba(176, 196, 222, 0.9);
     position: relative;
     z-index: 3;
 text-align: center; margin-top: 1rem;}
@@ -1556,7 +1556,7 @@ body {
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #4D6B87; opacity: 1;
+    color: rgba(176, 196, 222, 0.9);
 }
 
 .hero-section p {
@@ -2593,7 +2593,7 @@ body {
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #4D6B87; opacity: 1;
+    color: rgba(176, 196, 222, 0.9);
 }
 
 .hero-section p {
@@ -3630,7 +3630,7 @@ body {
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #4D6B87; opacity: 1;
+    color: rgba(176, 196, 222, 0.9);
 }
 
 .hero-section p {
@@ -4442,7 +4442,7 @@ body {
     font-weight: bold;
     font-family: 'Monaco', monospace;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    color: #4D6B87; opacity: 1;
+    color: rgba(176, 196, 222, 0.9);
     position: relative;
     z-index: 3;
 text-align: center; margin-top: 1rem;}
