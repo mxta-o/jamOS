@@ -20,8 +20,8 @@
             <svg class="progress-ring" width="300" height="300">
                 <defs>
                     <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                        <stop offset="0%" style="stop-color:#7B9FBE;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#5A7FA0;stop-opacity:1" />
                     </linearGradient>
                 </defs>
                 <circle class="bg-ring" cx="150" cy="150" r="130" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"></circle>
@@ -33,11 +33,12 @@
         </div>
         
         <div class="timer-center">
-            <img src="{{ url_for('static', filename='images/oshayippie.gif') }}" 
+            <img src="{{ url_for('static', filename='images/idle.gif') }}" 
                  alt="Oshawott" class="oshawott-gif" id="oshaGif">
-            <div class="timer-display" id="timerDisplay">25:00</div>
         </div>
     </div>
+    
+    <div class="timer-display" id="timerDisplay">25:00</div>
     
     <div class="timer-controls">
         <button class="timer-btn primary" id="startBtn">Start</button>
@@ -70,6 +71,7 @@ class PomodoroTimer {
     constructor() {
         this.timeLeft = 25 * 60; // 25 minutes in seconds
         this.isRunning = false;
+        this.hasStarted = false;
         this.currentMode = 'work';
         this.timer = null;
         this.completedSessions = parseInt(localStorage.getItem('pomodoroCompleted') || '0');
@@ -94,6 +96,17 @@ class PomodoroTimer {
         this.progressRing = document.getElementById('progressRing');
     }
     
+    updateGif() {
+        const basePath = "{{ url_for('static', filename='images/') }}";
+        if (!this.hasStarted) {
+            this.oshaGif.src = basePath + 'idle.gif';
+        } else if (this.currentMode === 'work') {
+            this.oshaGif.src = basePath + 'active.gif';
+        } else {
+            this.oshaGif.src = basePath + 'break-time.gif';
+        }
+    }
+    
     initEventListeners() {
         this.startBtn.addEventListener('click', () => this.start());
         this.pauseBtn.addEventListener('click', () => this.pause());
@@ -109,11 +122,13 @@ class PomodoroTimer {
     start() {
         if (!this.isRunning) {
             this.isRunning = true;
+            this.hasStarted = true;
             this.display.classList.add('running');
             this.timer = setInterval(() => this.tick(), 1000);
             this.startBtn.textContent = 'Running...';
             this.startBtn.disabled = true;
             this.pauseBtn.disabled = false;
+            this.updateGif();
         }
     }
     
@@ -130,6 +145,7 @@ class PomodoroTimer {
     
     reset() {
         this.pause();
+        this.hasStarted = false;
         const activeMode = document.querySelector('.mode-btn.active');
         this.timeLeft = parseInt(activeMode.dataset.duration) * 60;
         this.updateDisplay();
@@ -137,10 +153,12 @@ class PomodoroTimer {
         this.startBtn.disabled = false;
         this.pauseBtn.disabled = true;
         this.oshaGif.classList.remove('celebration');
+        this.updateGif();
     }
     
     switchMode(mode, duration) {
         this.pause();
+        this.hasStarted = false;
         this.currentMode = mode;
         this.timeLeft = duration * 60;
         
@@ -153,6 +171,7 @@ class PomodoroTimer {
         this.startBtn.disabled = false;
         this.pauseBtn.disabled = true;
         this.showMotivationalMessage();
+        this.updateGif();
     }
     
     tick() {
