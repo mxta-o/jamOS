@@ -167,38 +167,100 @@ def delete_capsule():
 # Time Block Planner Routes
 @productivity_bp.route('/time-blocks')
 def time_blocks():
-    selected_date = request.args.get('date', date.today().isoformat())
-    blocks = load_time_blocks()
+    # Get year and month from query params or default to current month
+    year = int(request.args.get('year', date.today().year))
+    month = int(request.args.get('month', date.today().month))
     
-    # Filter blocks for selected date
-    daily_blocks = [b for b in blocks if b.get('date') == selected_date]
+    # Get first day of the month and last day of the month
+    first_day = date(year, month, 1)
     
-    # Calculate stats
-    total_hours = sum(b.get('duration', 0) for b in daily_blocks)
-    work_blocks = len([b for b in daily_blocks if b.get('category') == 'work'])
-    personal_blocks = len([b for b in daily_blocks if b.get('category') == 'personal'])
+    # Get the last day of the month
+    if month == 12:
+        last_day = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        last_day = date(year, month + 1, 1) - timedelta(days=1)
     
-    # Format date for display
-    date_obj = datetime.strptime(selected_date, '%Y-%m-%d')
-    current_date_formatted = date_obj.strftime('%A, %B %d, %Y')
+    # Calculate calendar grid (start from Sunday before first day)
+    start_day = first_day - timedelta(days=first_day.weekday() + 1)  # Go to Sunday
+    if start_day.weekday() != 6:  # If not Sunday, go back to previous Sunday
+        start_day = start_day - timedelta(days=(start_day.weekday() + 1))
     
-    return render_template('apps/time_blocks.html', 
-                         blocks=daily_blocks,
-                         current_date=selected_date,
-                         current_date_formatted=current_date_formatted,
-                         total_hours=total_hours,
-                         work_blocks=work_blocks,
-                         personal_blocks=personal_blocks)
+    # Generate all days for the calendar (6 weeks)
+    calendar_days = []
+    current_date = start_day
+    for _ in range(42):  # 6 weeks * 7 days
+        calendar_days.append({
+            'date': current_date.isoformat(),
+            'day': current_date.day,
+            'current_month': current_date.month == month
+        })
+        current_date += timedelta(days=1)
+    
+    # Load all blocks
+    all_blocks = load_time_blocks()
+    
+    # Expand recurring blocks for the entire calendar view
+    expanded_blocks = []
+    for block in all_blocks:
+        if block.get('recurring'):
+            # Expand recurring block for each day it repeats in the calendar view
+            recurring_days = block.get('recurring_days', '').split(',')
+            for day_info in calendar_days:
+                day_date = datetime.strptime(day_info['date'], '%Y-%m-%d').date()
+                day_of_week = day_date.weekday()
+                # Convert weekday: Python uses Mon=0, we use Sun=0
+                adjusted_day = str((day_of_week + 1) % 7)
+                
+                if adjusted_day in recurring_days:
+                    expanded_block = block.copy()
+                    expanded_block['date'] = day_info['date']
+                    expanded_blocks.append(expanded_block)
+        else:
+            # Regular block
+            expanded_blocks.append(block)
+    
+    # Format month name
+    month_name = first_day.strftime('%B %Y')
+    
+    return render_template('apps/time_blocks_new.html', 
+                         blocks=expanded_blocks,
+                         calendar_days=calendar_days,
+                         month_name=month_name,
+                         current_month=first_day.isoformat(),
+                         today=date.today().isoformat())
 
 @productivity_bp.route('/add-time-block', methods=['POST'])
 def add_time_block():
-    start_time = request.form.get('start_time')
-    end_time = request.form.get('end_time')
+    # Convert 12-hour format to 24-hour format
+    start_hour = int(request.form.get('start_hour'))
+    start_minute = request.form.get('start_minute')
+    start_period = request.form.get('start_period')
+    
+    end_hour = int(request.form.get('end_hour'))
+    end_minute = request.form.get('end_minute')
+    end_period = request.form.get('end_period')
+    
+    # Convert to 24-hour format
+    if start_period == 'PM' and start_hour != 12:
+        start_hour += 12
+    elif start_period == 'AM' and start_hour == 12:
+        start_hour = 0
+        
+    if end_period == 'PM' and end_hour != 12:
+        end_hour += 12
+    elif end_period == 'AM' and end_hour == 12:
+        end_hour = 0
+    
+    start_time = f"{start_hour:02d}:{start_minute}"
+    end_time = f"{end_hour:02d}:{end_minute}"
     
     # Calculate duration
     start_dt = datetime.strptime(start_time, '%H:%M')
     end_dt = datetime.strptime(end_time, '%H:%M')
     duration = (end_dt - start_dt).seconds / 3600
+    
+    is_recurring = request.form.get('recurring') == 'true'
+    recurring_days = request.form.get('recurring_days', '')
     
     block_data = {
         'title': request.form.get('title'),
@@ -207,23 +269,51 @@ def add_time_block():
         'end_time': end_time,
         'duration': duration,
         'notes': request.form.get('notes', ''),
-        'date': request.form.get('date')
+        'recurring': is_recurring,
+        'recurring_days': recurring_days if is_recurring else '',
+        'date': request.form.get('date') if not is_recurring else ''
     }
     
     blocks = load_time_blocks()
     blocks.append(block_data)
     save_time_blocks(blocks)
     flash('Time block added!', 'success')
-    return redirect(url_for('productivity.time_blocks', date=request.form.get('date')))
+    return redirect(url_for('productivity.time_blocks'))
+
+@productivity_bp.route('/toggle-block-completion', methods=['POST'])
+def toggle_block_completion():
+    block_id = int(request.form.get('block_id'))
+    completed = request.form.get('completed') == 'true'
+    blocks = load_time_blocks()
+    
+    if 0 <= block_id < len(blocks):
+        blocks[block_id]['completed'] = completed
+        save_time_blocks(blocks)
+        return '', 200
+    return '', 400
 
 @productivity_bp.route('/delete-time-block', methods=['POST'])
 def delete_time_block():
     block_id = int(request.form.get('block_id'))
+    delete_all = request.form.get('delete_all') == 'true'
     blocks = load_time_blocks()
+    
     if 0 <= block_id < len(blocks):
-        blocks.pop(block_id)
+        if delete_all and blocks[block_id].get('recurring'):
+            # Delete all recurring instances with the same title and time
+            target_block = blocks[block_id]
+            blocks = [b for b in blocks if not (
+                b.get('recurring') and
+                b.get('title') == target_block.get('title') and
+                b.get('start_time') == target_block.get('start_time') and
+                b.get('end_time') == target_block.get('end_time')
+            )]
+            flash('All recurring instances deleted!', 'success')
+        else:
+            blocks.pop(block_id)
+            flash('Time block deleted!', 'success')
+        
         save_time_blocks(blocks)
-        flash('Time block deleted!', 'success')
     return redirect(url_for('productivity.time_blocks'))
 
 # Helper functions for data management
