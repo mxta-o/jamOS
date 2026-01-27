@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 import json
 from datetime import datetime, date, timedelta
 import os
@@ -167,6 +167,85 @@ def delete_capsule():
 # Time Block Planner Routes
 @productivity_bp.route('/time-blocks')
 def time_blocks():
+    # Default to monthly view in unified template
+    return time_blocks_monthly()
+
+@productivity_bp.route('/time-blocks/weekly')
+def time_blocks_weekly():
+    # Get the current week or specified week
+    week_start = request.args.get('week_start')
+    if week_start:
+        try:
+            current_week_start = datetime.strptime(week_start, '%Y-%m-%d').date()
+        except ValueError:
+            current_week_start = date.today()
+            current_week_start = current_week_start - timedelta(days=current_week_start.weekday())
+    else:
+        current_week_start = date.today()
+        current_week_start = current_week_start - timedelta(days=current_week_start.weekday())
+    
+    # Generate the 7 days of the week
+    week_dates = []
+    for i in range(7):
+        week_date = current_week_start + timedelta(days=i)
+        week_dates.append(week_date.isoformat())
+    
+    # Load all time blocks
+    all_blocks = load_time_blocks()
+    
+    # Filter and expand blocks for this week
+    week_blocks = []
+    for block in all_blocks:
+        if block.get('recurring'):
+            # Check each day of the week for recurring blocks
+            recurring_days = block.get('recurring_days', '').split(',')
+            for date_str in week_dates:
+                day_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                # Convert weekday: Python uses Mon=0, we use Sun=0
+                adjusted_day = str((day_date.weekday() + 1) % 7)
+                
+                if adjusted_day in recurring_days:
+                    expanded_block = block.copy()
+                    expanded_block['date'] = date_str
+                    expanded_block['is_recurring_instance'] = True
+                    week_blocks.append(expanded_block)
+        else:
+            # Regular blocks - only include if within this week
+            if block.get('date') in week_dates:
+                week_blocks.append(block)
+    
+    # Format week display and navigation
+    start_date = current_week_start
+    end_date = current_week_start + timedelta(days=6)
+    week_display = f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d, %Y')}"
+    
+    # Calculate previous and next week dates
+    prev_week = (current_week_start - timedelta(days=7)).isoformat()
+    next_week = (current_week_start + timedelta(days=7)).isoformat()
+    
+    # Check if this is an AJAX request
+    if request.args.get('ajax'):
+        return jsonify({
+            'blocks': week_blocks,
+            'week_dates': week_dates,
+            'week_display': week_display,
+            'week_start': current_week_start.isoformat(),
+            'prev_week': prev_week,
+            'next_week': next_week,
+            'today': date.today().isoformat()
+        })
+    
+    return render_template('apps/time_blocks.html',
+                         blocks=week_blocks,
+                         week_dates=week_dates,
+                         week_display=week_display,
+                         week_start=current_week_start.isoformat(),
+                         prev_week=prev_week,
+                         next_week=next_week,
+                         today=date.today().isoformat())
+
+@productivity_bp.route('/time-blocks/monthly')
+def time_blocks_monthly():
     # Get year and month from query params or default to current month
     year = int(request.args.get('year', date.today().year))
     month = int(request.args.get('month', date.today().month))
@@ -192,7 +271,7 @@ def time_blocks():
         calendar_days.append({
             'date': current_date.isoformat(),
             'day': current_date.day,
-            'current_month': current_date.month == month
+            'in_month': current_date.month == month
         })
         current_date += timedelta(days=1)
     
@@ -214,6 +293,7 @@ def time_blocks():
                 if adjusted_day in recurring_days:
                     expanded_block = block.copy()
                     expanded_block['date'] = day_info['date']
+                    expanded_block['is_recurring_instance'] = True
                     expanded_blocks.append(expanded_block)
         else:
             # Regular block
@@ -221,11 +301,21 @@ def time_blocks():
     
     # Format month name
     month_name = first_day.strftime('%B %Y')
+
+    # Check if this is an AJAX request
+    if request.args.get('ajax'):
+        return jsonify({
+            'blocks': expanded_blocks,
+            'calendar_days': calendar_days,
+            'current_month_display': month_name,
+            'current_month': first_day.isoformat(),
+            'today': date.today().isoformat()
+        })
     
-    return render_template('apps/time_blocks_new.html', 
+    return render_template('apps/time_blocks.html', 
                          blocks=expanded_blocks,
                          calendar_days=calendar_days,
-                         month_name=month_name,
+                         current_month_display=month_name,
                          current_month=first_day.isoformat(),
                          today=date.today().isoformat())
 
@@ -277,8 +367,9 @@ def add_time_block():
     blocks = load_time_blocks()
     blocks.append(block_data)
     save_time_blocks(blocks)
-    flash('Time block added!', 'success')
-    return redirect(url_for('productivity.time_blocks'))
+    
+    # Return JSON response (compatible with both AJAX and regular form submissions)
+    return jsonify({'success': True, 'message': 'Time block added!'})
 
 @productivity_bp.route('/toggle-block-completion', methods=['POST'])
 def toggle_block_completion():
@@ -294,26 +385,57 @@ def toggle_block_completion():
 
 @productivity_bp.route('/delete-time-block', methods=['POST'])
 def delete_time_block():
-    block_id = int(request.form.get('block_id'))
-    delete_all = request.form.get('delete_all') == 'true'
-    blocks = load_time_blocks()
+    # Get block data instead of index to avoid index mismatches
+    block_title = request.form.get('block_title')
+    block_date = request.form.get('block_date')
+    block_start_time = request.form.get('block_start_time')
+    block_end_time = request.form.get('block_end_time')
+    is_recurring = request.form.get('is_recurring') == 'true'
     
-    if 0 <= block_id < len(blocks):
-        if delete_all and blocks[block_id].get('recurring'):
-            # Delete all recurring instances with the same title and time
-            target_block = blocks[block_id]
-            blocks = [b for b in blocks if not (
-                b.get('recurring') and
-                b.get('title') == target_block.get('title') and
-                b.get('start_time') == target_block.get('start_time') and
-                b.get('end_time') == target_block.get('end_time')
-            )]
-            flash('All recurring instances deleted!', 'success')
-        else:
-            blocks.pop(block_id)
-            flash('Time block deleted!', 'success')
-        
+    blocks = load_time_blocks()
+    deleted = False
+    
+    # Find and remove the matching block(s)
+    if is_recurring:
+        # For recurring blocks, remove the entire recurring pattern
+        original_count = len(blocks)
+        blocks = [b for b in blocks if not (
+            b.get('title') == block_title and
+            b.get('start_time') == block_start_time and
+            b.get('end_time') == block_end_time and
+            b.get('recurring') == True
+        )]
+        deleted = len(blocks) < original_count
+    else:
+        # For non-recurring blocks, find exact match by date, title, and time
+        original_count = len(blocks)
+        blocks = [b for b in blocks if not (
+            b.get('title') == block_title and
+            b.get('date') == block_date and
+            b.get('start_time') == block_start_time and
+            b.get('end_time') == block_end_time and
+            not b.get('recurring')
+        )]
+        deleted = len(blocks) < original_count
+    
+    if deleted:
         save_time_blocks(blocks)
+        message = 'Time block deleted successfully!'
+        
+        # Return JSON for AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax') or request.form.get('ajax'):
+            return jsonify({'success': True, 'message': message})
+        
+        flash(message, 'success')
+    else:
+        message = 'Block not found or could not be deleted.'
+        
+        # Return JSON for AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax') or request.form.get('ajax'):
+            return jsonify({'success': False, 'message': message})
+        
+        flash(message, 'error')
+    
     return redirect(url_for('productivity.time_blocks'))
 
 # Helper functions for data management

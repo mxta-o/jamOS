@@ -1,0 +1,1847 @@
+{% extends "base.html" %}
+
+{% block title %}Time Block Calendar - jamOS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Common Styles */
+    .planner-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: transparent;
+    }
+    
+    .planner-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        background: #2c4662;
+        padding: 0.5rem;
+        border-radius: 12px;
+    }
+    
+    .view-btn {
+        padding: 0.6rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: #b8d4e8;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .view-btn:hover {
+        background: rgba(123, 159, 190, 0.2);
+        color: #e8f4f8;
+    }
+    
+    .view-btn.active {
+        background: linear-gradient(135deg, #7B9FBE 0%, #5A7FA0 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .date-navigation {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #3d5a80;
+        padding: 1rem 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .nav-btn {
+        background: #7B9FBE;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+    }
+    
+    .nav-btn:hover {
+        background: #5A7FA0;
+    }
+    
+    .current-period {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #e8f4f8;
+        min-width: 250px;
+        text-align: center;
+    }
+    
+    /* Monthly View Styles */
+    .monthly-view {
+        display: block;
+    }
+    
+    .monthly-view.hidden {
+        display: none;
+    }
+    
+    .calendar-header {
+        background: linear-gradient(135deg, #7B9FBE 0%, #5A7FA0 100%);
+        color: white;
+        padding: 0.5rem;
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        background: #1a2332;
+        padding: 2px;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .calendar-day {
+        background: #2c4662;
+        min-height: 120px;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .calendar-day:hover {
+        background: #3a5775;
+        transform: scale(1.02);
+    }
+    
+    .calendar-day.other-month {
+        opacity: 0.3;
+        background: #1e2935;
+    }
+    
+    .calendar-day.today {
+        background: linear-gradient(135deg, #5a7fa0 0%, #4a6fa5 100%);
+        box-shadow: 0 0 0 2px #ffd700;
+    }
+    
+    .day-number {
+        font-weight: bold;
+        color: #e8f4f8;
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+    }
+    
+    .day-blocks {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        flex: 1;
+    }
+    
+    .mini-block {
+        background: linear-gradient(135deg, rgba(123, 159, 190, 0.8) 0%, rgba(90, 127, 160, 0.8) 100%);
+        color: white;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .mini-block:hover {
+        transform: scale(1.05);
+        z-index: 10;
+    }
+    
+    /* Weekly View Styles */
+    .weekly-view {
+        display: none;
+    }
+    
+    .weekly-view.active {
+        display: block;
+    }
+    
+    .weekly-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1rem;
+        background: #2c3e50;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        padding: 1rem;
+    }
+    
+    .day-column {
+        background: #2c4662;
+        border-radius: 15px;
+        padding: 1rem;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .weekly-day-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+        color: white;
+        padding: 0.8rem;
+        text-align: center;
+        font-weight: bold;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .weekly-day-header.today {
+        background: linear-gradient(135deg, #5a7fa0 0%, #4a6fa5 100%);
+        box-shadow: 0 0 0 2px #ffd700;
+    }
+    
+    .add-block-btn {
+        background: linear-gradient(135deg, #7B9FBE 0%, #5A7FA0 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .add-block-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(123, 159, 190, 0.4);
+    }
+    
+    .time-block {
+        background: linear-gradient(135deg, rgba(123, 159, 190, 0.95) 0%, rgba(90, 127, 160, 0.95) 100%);
+        color: white;
+        padding: 0.8rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        border-left: 3px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .time-block:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    
+    .block-time {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        opacity: 0.9;
+        margin-bottom: 0.2rem;
+        text-transform: uppercase;
+    }
+    
+    .block-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    
+    .block-recurring-icon {
+        position: absolute;
+        top: 0.3rem;
+        right: 0.3rem;
+        font-size: 0.7rem;
+        opacity: 0.8;
+    }
+    
+    .empty-day-message {
+        color: #7B9FBE;
+        text-align: center;
+        padding: 2rem 1rem;
+        font-size: 0.9rem;
+        opacity: 0.6;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .empty-day-message:hover {
+        opacity: 1;
+        color: #e8f4f8;
+    }
+    
+    /* Category Colors */
+    .time-block.category-work,
+    .mini-block.category-work { 
+        background: linear-gradient(135deg, rgba(123, 159, 190, 0.95) 0%, rgba(90, 127, 160, 0.95) 100%); 
+        border-left-color: #9ec5e8;
+    }
+    .time-block.category-personal,
+    .mini-block.category-personal { 
+        background: linear-gradient(135deg, rgba(17, 153, 142, 0.95) 0%, rgba(56, 239, 125, 0.95) 100%); 
+        border-left-color: #56f39a;
+    }
+    .time-block.category-health,
+    .mini-block.category-health { 
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.95) 0%, rgba(255, 167, 38, 0.95) 100%); 
+        border-left-color: #ffb84d;
+    }
+    .time-block.category-learning,
+    .mini-block.category-learning { 
+        background: linear-gradient(135deg, rgba(168, 230, 207, 0.95) 0%, rgba(136, 216, 192, 0.95) 100%); 
+        border-left-color: #b8f5d9;
+    }
+    .time-block.category-social,
+    .mini-block.category-social { 
+        background: linear-gradient(135deg, rgba(255, 216, 155, 0.95) 0%, rgba(25, 84, 123, 0.95) 100%); 
+        border-left-color: #ffe4a8;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: #e8f4f8;
+        font-size: 0.95rem;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        background: #2c4662;
+        color: #e8f4f8;
+        border: 2px solid #4a6fa5;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #7B9FBE;
+    }
+    
+    .form-group textarea {
+        min-height: 60px;
+        resize: vertical;
+    }
+    
+    .time-input-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.5rem;
+    }
+    
+    .recurring-toggle {
+        margin-top: 1rem;
+        padding: 0.8rem;
+        background: #2c4662;
+        border-radius: 10px;
+    }
+    
+    .recurring-toggle label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        color: #e8f4f8;
+    }
+    
+    .recurring-toggle input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+    
+    .recurring-options {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #2c4662;
+        border: 2px solid #4a6fa5;
+        border-radius: 10px;
+    }
+    
+    .days-selector {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .day-btn {
+        padding: 0.5rem;
+        border: 2px solid #4a6fa5;
+        background: #3d5a80;
+        color: #e8f4f8;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .day-btn.selected {
+        background: #7B9FBE;
+        color: white;
+        border-color: #7B9FBE;
+    }
+    
+    .day-btn:hover {
+        border-color: #7B9FBE;
+    }
+    
+    .btn-add {
+        background: linear-gradient(135deg, #7B9FBE 0%, #5A7FA0 100%);
+        color: white;
+    }
+    
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(123, 159, 190, 0.4);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .planner-container {
+            padding: 1.5rem;
+        }
+        
+        .calendar-day {
+            min-height: 100px;
+            padding: 0.4rem;
+        }
+        
+        .day-column {
+            min-height: 400px;
+            padding: 0.8rem;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .planner-header {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .view-toggle {
+            order: 2;
+        }
+        
+        .date-navigation {
+            order: 1;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .weekly-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+        }
+        
+        .calendar-day {
+            min-height: 80px;
+            padding: 0.3rem;
+        }
+        
+        .mini-block {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.3rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .planner-container {
+            padding: 1rem;
+        }
+        
+        .weekly-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+        
+        .calendar-days {
+            gap: 1px;
+        }
+        
+        .calendar-day {
+            min-height: 60px;
+            padding: 0.2rem;
+        }
+        
+        .day-number {
+            font-size: 0.8rem;
+        }
+        
+        .mini-block {
+            font-size: 0.5rem;
+            padding: 0.1rem 0.2rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .weekly-grid {
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+        
+        .day-column {
+            min-height: 250px;
+        }
+        
+        .calendar-day {
+            min-height: 50px;
+        }
+        
+        .current-period {
+            font-size: 1rem;
+            min-width: 150px;
+        }
+        
+        .nav-btn {
+            width: 35px;
+            height: 35px;
+        }
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: linear-gradient(135deg, #3d5a80 0%, #2c4662 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: min(600px, 90vw);
+        max-height: 90vh;
+        width: 90%;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #4a6fa5;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #e8f4f8;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #e8f4f8;
+        font-size: 1.5rem;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-body {
+        color: #e8f4f8;
+        line-height: 1.6;
+    }
+
+    .modal-body > div {
+        margin-bottom: 1rem;
+        padding: 0.8rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+    }
+
+    .modal-actions {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #4a6fa5;
+    }
+
+    .modal-btn {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* Notification animations */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    /* Additional utility classes */
+    .notification {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Notification styles */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        font-weight: 600;
+        min-width: 250px;
+        text-align: center;
+        animation: slideInRight 0.3s ease;
+    }
+
+    .notification.error {
+        background: #f44336;
+    }
+
+    /* Confirmation Modal Styles */
+    .confirmation-modal {
+        max-width: min(500px, 90vw);
+    }
+
+    .confirmation-content {
+        text-align: center;
+        padding: 1rem 0;
+    }
+
+    .warning-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .confirmation-message {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #e8f4f8;
+        margin-bottom: 1.5rem;
+        line-height: 1.4;
+    }
+
+    .block-summary {
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid #4a6fa5;
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        text-align: left;
+    }
+
+    .block-summary strong {
+        color: #7B9FBE;
+    }
+
+    .block-summary div {
+        margin: 0.5rem 0;
+        padding: 0;
+        background: transparent;
+        border-radius: 0;
+    }
+
+    .warning-text {
+        color: #ff9999;
+        font-size: 0.9rem;
+        font-style: italic;
+        margin-top: 1rem;
+    }
+
+    .confirmation-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .confirmation-actions .modal-btn {
+        width: auto;
+        min-width: 140px;
+        flex: 1;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+    }
+
+    .btn-cancel:hover {
+        background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-confirm-delete {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        animation: pulse-danger 2s infinite;
+    }
+
+    .btn-confirm-delete:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        animation: none;
+    }
+
+    @keyframes pulse-danger {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    /* Responsive adjustments for confirmation modal */
+    @media (max-width: 576px) {
+        .confirmation-actions {
+            flex-direction: column;
+        }
+        
+        .warning-icon {
+            font-size: 2.5rem;
+        }
+        
+        .confirmation-message {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>📅 Time Block Calendar</h1>
+    <p>Plan, track, and optimize your time with visual time blocking</p>
+</div>
+
+<div class="planner-container">
+    <div class="planner-header">
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('monthly')">📆 Monthly</button>
+            <button class="view-btn" onclick="switchView('weekly')">📅 Weekly</button>
+        </div>
+        
+        <div class="date-navigation">
+            <button class="nav-btn" onclick="navigatePeriod(-1)">◀</button>
+            <div class="current-period" id="currentPeriod">{{ current_month_display if current_month_display else week_display }}</div>
+            <button class="nav-btn" onclick="navigatePeriod(1)">▶</button>
+        </div>
+    </div>
+
+    <!-- Monthly View -->
+    <div id="monthlyView" class="monthly-view">
+        <div class="calendar-header">
+            <div style="text-align: center; font-weight: bold;">Sunday</div>
+            <div style="text-align: center; font-weight: bold;">Monday</div>
+            <div style="text-align: center; font-weight: bold;">Tuesday</div>
+            <div style="text-align: center; font-weight: bold;">Wednesday</div>
+            <div style="text-align: center; font-weight: bold;">Thursday</div>
+            <div style="text-align: center; font-weight: bold;">Friday</div>
+            <div style="text-align: center; font-weight: bold;">Saturday</div>
+        </div>
+        
+        <div class="calendar-days" id="calendarDays">
+            {% if calendar_days %}
+                {% for day in calendar_days %}
+                    {% set day_blocks = blocks | selectattr('date', 'equalto', day.date) | list %}
+                    <div class="calendar-day {{ 'other-month' if not day.in_month else '' }} {{ 'today' if day.date == today else '' }}" 
+                         onclick="openAddBlockModal('{{ day.date }}')">
+                        <div class="day-number">{{ day.day }}</div>
+                        <div class="day-blocks">
+                            {% for block in day_blocks | sort(attribute='start_time') %}
+                                {% if loop.index <= 3 %}
+                                    <div class="mini-block category-{{ block.category }}" 
+                                         onclick="event.stopPropagation(); viewBlock('{{ blocks.index(block) }}', '{{ block.title }}', '{{ block.start_time }}', '{{ block.end_time }}', '{{ block.category }}', '{{ block.notes or '' }}', {{ block.recurring | lower }})">
+                                        {{ block.start_time }} {{ block.title[:10] }}{{ '...' if block.title|length > 10 else '' }}
+                                    </div>
+                                {% elif loop.index == 4 %}
+                                    <div class="mini-block" style="background: #666; text-align: center;">
+                                        +{{ day_blocks|length - 3 }} more
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Weekly View -->
+    <div id="weeklyView" class="weekly-view">
+        <div class="weekly-grid" id="weeklyGrid">
+            <!-- Weekly view will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Add Block Modal -->
+<div class="modal-overlay" id="addBlockModal" onclick="closeAddBlockModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title">Add Time Block</h3>
+            <button class="modal-close" onclick="closeAddBlockModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{{ url_for('productivity.add_time_block') }}" id="blockFormModal">
+                <input type="hidden" name="date" id="blockDateModal">
+                
+                <div class="form-group">
+                    <label for="titleModal">Block Title</label>
+                    <input type="text" id="titleModal" name="title" required 
+                           placeholder="e.g., Study, Walk, Meeting">
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoryModal">Category</label>
+                    <select id="categoryModal" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="work">Work</option>
+                        <option value="personal">Personal</option>
+                        <option value="health">Health & Fitness</option>
+                        <option value="learning">Learning</option>
+                        <option value="social">Social</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <div class="time-input-group">
+                        <select id="start_hour_modal" name="start_hour" required>
+                            <option value="">Hour</option>
+                            {% for h in range(1, 13) %}
+                            <option value="{{ h }}">{{ h }}</option>
+                            {% endfor %}
+                        </select>
+                        <select id="start_minute_modal" name="start_minute" required>
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <select id="start_period_modal" name="start_period" required>
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>End Time</label>
+                    <div class="time-input-group">
+                        <select id="end_hour_modal" name="end_hour" required>
+                            <option value="">Hour</option>
+                            {% for h in range(1, 13) %}
+                            <option value="{{ h }}">{{ h }}</option>
+                            {% endfor %}
+                        </select>
+                        <select id="end_minute_modal" name="end_minute" required>
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <select id="end_period_modal" name="end_period" required>
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notesModal">Notes (optional)</label>
+                    <textarea id="notesModal" name="notes" placeholder="Add any notes or reminders..."></textarea>
+                </div>
+                
+                <div class="recurring-toggle">
+                    <label>
+                        <input type="checkbox" id="isRecurringModal" name="recurring" value="true" onchange="toggleRecurringOptionsModal()">
+                        Repeat this block weekly
+                    </label>
+                </div>
+                
+                <div class="recurring-options" id="recurringOptionsModal" style="display: none;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: #e8f4f8;">Repeat on:</label>
+                    <div class="days-selector">
+                        <button type="button" class="day-btn" data-day="0" onclick="toggleDayModal(this)">Sun</button>
+                        <button type="button" class="day-btn" data-day="1" onclick="toggleDayModal(this)">Mon</button>
+                        <button type="button" class="day-btn" data-day="2" onclick="toggleDayModal(this)">Tue</button>
+                        <button type="button" class="day-btn" data-day="3" onclick="toggleDayModal(this)">Wed</button>
+                        <button type="button" class="day-btn" data-day="4" onclick="toggleDayModal(this)">Thu</button>
+                        <button type="button" class="day-btn" data-day="5" onclick="toggleDayModal(this)">Fri</button>
+                        <button type="button" class="day-btn" data-day="6" onclick="toggleDayModal(this)">Sat</button>
+                    </div>
+                    <input type="hidden" id="recurringDaysModal" name="recurring_days" value="">
+                </div>
+                
+                <button type="submit" class="modal-btn btn-add" style="width: 100%; margin-top: 1.5rem;">
+                    Add Block
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Block Details Modal -->
+<div id="blockModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title">Time Block Details</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="modalContent"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn btn-delete" onclick="showDeleteConfirmation()">🗑️ Delete Block</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="modal-overlay" onclick="closeDeleteConfirmModal(event)">
+    <div class="modal-content confirmation-modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title">🗑️ Delete Time Block</h3>
+            <button class="modal-close" onclick="closeDeleteConfirmModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="confirmation-content">
+                <div class="warning-icon">⚠️</div>
+                <p class="confirmation-message">Are you sure you want to delete this time block?</p>
+                <div id="blockSummary" class="block-summary"></div>
+                <p class="warning-text">This action cannot be undone.</p>
+            </div>
+        </div>
+        <div class="modal-actions confirmation-actions">
+            <button class="modal-btn btn-cancel" onclick="closeDeleteConfirmModal()">Cancel</button>
+            <button class="modal-btn btn-confirm-delete" onclick="confirmDeleteBlock()">🗑️ Delete Block</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global state
+let currentView = 'monthly';
+let currentDate = new Date();
+let isLoading = false;
+
+// View switching
+function switchView(view) {
+    currentView = view;
+    
+    // Update button states
+    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide views
+    if (view === 'monthly') {
+        document.getElementById('monthlyView').classList.remove('hidden');
+        document.getElementById('weeklyView').classList.remove('active');
+        loadMonthlyView();
+    } else {
+        document.getElementById('monthlyView').classList.add('hidden');
+        document.getElementById('weeklyView').classList.add('active');
+        loadWeeklyView();
+    }
+}
+
+// Navigation
+function navigatePeriod(direction) {
+    if (isLoading) return;
+    
+    if (currentView === 'monthly') {
+        currentDate.setMonth(currentDate.getMonth() + direction);
+        loadMonthlyView();
+    } else {
+        currentDate.setDate(currentDate.getDate() + (direction * 7));
+        loadWeeklyView();
+    }
+}
+
+function goToToday() {
+    currentDate = new Date();
+    if (currentView === 'monthly') {
+        loadMonthlyView();
+    } else {
+        loadWeeklyView();
+    }
+}
+
+// Load monthly view data
+function loadMonthlyView() {
+    if (isLoading) return;
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    
+    showLoading();
+    fetch(`{{ url_for('productivity.time_blocks_monthly') }}?year=${year}&month=${month}&ajax=1`)
+        .then(response => response.json())
+        .then(data => {
+            updateMonthlyView(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading monthly data.');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+// Load weekly view data
+function loadWeeklyView() {
+    if (isLoading) return;
+    
+    // Get Monday of current week - use local date to avoid timezone issues
+    const monday = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    const day = monday.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    
+    // Calculate days back to Monday
+    const daysBackToMonday = (day === 0) ? 6 : day - 1; // If Sunday, go back 6 days, else go back (day-1) days
+    monday.setDate(monday.getDate() - daysBackToMonday);
+    
+    // Format as YYYY-MM-DD to avoid timezone conversion
+    const weekStart = monday.getFullYear() + '-' + 
+                     String(monday.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(monday.getDate()).padStart(2, '0');
+    
+    showLoading();
+    fetch(`{{ url_for('productivity.time_blocks_weekly') }}?week_start=${weekStart}&ajax=1`)
+        .then(response => response.json())
+        .then(data => {
+            updateWeeklyView(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading weekly data.');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function updateMonthlyView(data) {
+    document.getElementById('currentPeriod').textContent = data.current_month_display;
+    
+    const calendarDays = document.getElementById('calendarDays');
+    calendarDays.innerHTML = '';
+    
+    data.calendar_days.forEach(day => {
+        const dayBlocks = data.blocks.filter(block => block.date === day.date);
+        
+        const dayElement = document.createElement('div');
+        dayElement.className = `calendar-day ${!day.in_month ? 'other-month' : ''} ${day.date === data.today ? 'today' : ''}`;
+        dayElement.onclick = () => openAddBlockModal(day.date);
+        
+        dayElement.innerHTML = `
+            <div class="day-number">${day.day}</div>
+            <div class="day-blocks">
+                ${dayBlocks.slice(0, 3).map(block => 
+                    `<div class="mini-block category-${block.category}" onclick="event.stopPropagation(); viewBlock('${data.blocks.indexOf(block)}', '${block.title}', '${block.start_time}', '${block.end_time}', '${block.category}', '${block.notes || ''}', ${block.recurring})">
+                        ${block.start_time} ${block.title.substring(0, 10)}${block.title.length > 10 ? '...' : ''}
+                    </div>`
+                ).join('')}
+                ${dayBlocks.length > 3 ? `<div class="mini-block" style="background: #666; text-align: center;">+${dayBlocks.length - 3} more</div>` : ''}
+            </div>
+        `;
+        
+        calendarDays.appendChild(dayElement);
+    });
+}
+
+function updateWeeklyView(data) {
+    document.getElementById('currentPeriod').textContent = data.week_display;
+    
+    const weeklyGrid = document.getElementById('weeklyGrid');
+    weeklyGrid.innerHTML = '';
+    
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    
+    data.week_dates.forEach((date, index) => {
+        const dayBlocks = data.blocks.filter(block => block.date === date);
+        const isToday = date === data.today;
+        
+        const dayColumn = document.createElement('div');
+        dayColumn.className = 'day-column';
+        
+        dayColumn.innerHTML = `
+            <div class="weekly-day-header ${isToday ? 'today' : ''}">
+                ${dayNames[index]}<br>
+                <small>${parseInt(date.split('-')[2])}</small>
+            </div>
+            
+            <button type="button" class="add-block-btn" onclick="openAddBlockModal('${date}')">+ Add Block</button>
+            
+            <div class="day-blocks">
+                ${dayBlocks.length > 0 ? 
+                    dayBlocks.sort((a, b) => a.start_time.localeCompare(b.start_time))
+                        .map(block => `
+                            <div class="time-block category-${block.category}" onclick="viewBlock('${data.blocks.indexOf(block)}', '${block.title}', '${block.start_time}', '${block.end_time}', '${block.category}', '${block.notes || ''}', ${block.recurring})">
+                                ${block.recurring ? '<span class="block-recurring-icon">🔁</span>' : ''}
+                                <div class="block-time">${block.start_time}</div>
+                                <div class="block-title">${block.title}</div>
+                            </div>
+                        `).join('')
+                    : `<div class="empty-day-message">
+                        No blocks scheduled<br>
+                        <small style="opacity: 0.7;">Click + to add</small>
+                    </div>`
+                }
+            </div>
+        `;
+        
+        weeklyGrid.appendChild(dayColumn);
+    });
+}
+
+function showLoading() {
+    isLoading = true;
+    const loadingEl = document.createElement('div');
+    loadingEl.id = 'loadingIndicator';
+    loadingEl.innerHTML = '🔄 Loading...';
+    loadingEl.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #3d5a80; color: #e8f4f8; padding: 1rem 2rem; border-radius: 10px; z-index: 9999; font-weight: bold;';
+    document.body.appendChild(loadingEl);
+}
+
+function hideLoading() {
+    isLoading = false;
+    const loadingEl = document.getElementById('loadingIndicator');
+    if (loadingEl) document.body.removeChild(loadingEl);
+}
+
+// Modal functions
+function openAddBlockModal(date) {
+    document.getElementById('blockDateModal').value = date;
+    const now = new Date();
+    const hour = now.getHours();
+    document.getElementById('start_hour_modal').value = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+    document.getElementById('start_minute_modal').value = '00';
+    document.getElementById('start_period_modal').value = hour >= 12 ? 'PM' : 'AM';
+    document.getElementById('addBlockModal').classList.add('active');
+    setTimeout(() => document.getElementById('titleModal').focus(), 100);
+}
+
+function closeAddBlockModal(event) {
+    if (!event || event.target.id === 'addBlockModal') {
+        document.getElementById('addBlockModal').classList.remove('active');
+        document.getElementById('blockFormModal').reset();
+        selectedDaysModal = [];
+        document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('selected'));
+    }
+}
+
+function closeModal(event) {
+    if (!event || event.target.id === 'blockModal' || event.target.classList.contains('modal-close')) {
+        const modal = document.getElementById('blockModal');
+        modal.classList.remove('active');
+        
+        // Reset delete button state when closing modal
+        const deleteBtn = modal.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.innerHTML = '🗑️ Delete Block';
+            deleteBtn.disabled = false;
+        }
+    }
+}
+
+function viewBlock(index, title, startTime, endTime, category, notes, recurring) {
+    const modal = document.getElementById('blockModal');
+    const content = document.getElementById('modalContent');
+    
+    content.innerHTML = `
+        <div><strong>📋 Title:</strong> ${title}</div>
+        <div><strong>🕒 Time:</strong> ${startTime} - ${endTime}</div>
+        <div><strong>📁 Category:</strong> ${category}</div>
+        ${notes ? `<div><strong>📝 Notes:</strong> ${notes}</div>` : ''}
+        ${recurring ? `<div><strong>🔁 Recurring:</strong> This block repeats</div>` : ''}
+    `;
+    
+    // Store block data for deletion instead of index
+    modal.dataset.blockTitle = title;
+    modal.dataset.blockStartTime = startTime;
+    modal.dataset.blockEndTime = endTime;
+    modal.dataset.isRecurring = recurring;
+    modal.dataset.blockCategory = category; // Add category for confirmation modal
+    
+    // Find the current date for this block
+    const currentBlockDate = getCurrentBlockDate(title, startTime, endTime, recurring);
+    modal.dataset.blockDate = currentBlockDate;
+    
+    // Reset delete button to original state
+    const deleteBtn = modal.querySelector('.btn-delete');
+    deleteBtn.innerHTML = '🗑️ Delete Block';
+    deleteBtn.disabled = false;
+    
+    modal.classList.add('active');
+}
+
+function getCurrentBlockDate(title, startTime, endTime, recurring) {
+    console.log('Getting current block date for:', {title, startTime, endTime, recurring, currentView}); // Debug log
+    
+    if (currentView === 'monthly') {
+        // For monthly view, we can try to find it in the current month data
+        const monthData = document.getElementById('calendarDays');
+        const blocks = monthData.querySelectorAll('.mini-block');
+        
+        for (let block of blocks) {
+            const blockText = block.textContent.trim();
+            if (blockText.includes(startTime) && blockText.includes(title.substring(0, 10))) {
+                // Find the parent calendar day
+                const calendarDay = block.closest('.calendar-day');
+                const dayNumber = calendarDay.querySelector('.day-number').textContent;
+                
+                // Construct date from current month and day
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth() + 1;
+                const constructedDate = `${year}-${month.toString().padStart(2, '0')}-${dayNumber.padStart(2, '0')}`;
+                console.log('Found date from monthly view:', constructedDate); // Debug log
+                return constructedDate;
+            }
+        }
+    } else {
+        // For weekly view, find it in the week data
+        const weekGrid = document.getElementById('weeklyGrid');
+        const timeBlocks = weekGrid.querySelectorAll('.time-block');
+        
+        for (let block of timeBlocks) {
+            const blockTimeEl = block.querySelector('.block-time');
+            const blockTitleEl = block.querySelector('.block-title');
+            
+            if (blockTimeEl && blockTitleEl && 
+                blockTimeEl.textContent === startTime && 
+                blockTitleEl.textContent === title) {
+                
+                // Find the parent day column and extract date
+                const dayColumn = block.closest('.day-column');
+                const dayHeader = dayColumn.querySelector('.weekly-day-header small');
+                if (dayHeader) {
+                    const dayNumber = dayHeader.textContent;
+                    
+                    // Get the current week start and calculate the date
+                    const monday = new Date(currentDate);
+                    const day = monday.getDay();
+                    const daysBackToMonday = (day === 0) ? 6 : day - 1;
+                    monday.setDate(monday.getDate() - daysBackToMonday);
+                    
+                    // Find which day of the week this is
+                    const dayIndex = Array.from(dayColumn.parentNode.children).indexOf(dayColumn);
+                    const blockDate = new Date(monday);
+                    blockDate.setDate(monday.getDate() + dayIndex);
+                    
+                    const constructedDate = blockDate.toISOString().split('T')[0];
+                    console.log('Found date from weekly view:', constructedDate); // Debug log
+                    return constructedDate;
+                }
+            }
+        }
+    }
+    
+    // Fallback: return today's date
+    const fallbackDate = new Date().toISOString().split('T')[0];
+    console.log('Using fallback date:', fallbackDate); // Debug log
+    return fallbackDate;
+}
+
+function showDeleteConfirmation() {
+    const blockModal = document.getElementById('blockModal');
+    const confirmModal = document.getElementById('deleteConfirmModal');
+    const blockSummary = document.getElementById('blockSummary');
+    
+    // Get block data from the main modal
+    const title = blockModal.dataset.blockTitle;
+    const startTime = blockModal.dataset.blockStartTime;
+    const endTime = blockModal.dataset.blockEndTime;
+    const category = blockModal.dataset.blockCategory;
+    const isRecurring = blockModal.dataset.isRecurring === 'true';
+    const date = blockModal.dataset.blockDate;
+    
+    // Populate the confirmation modal with block details
+    blockSummary.innerHTML = `
+        <div><strong>📋 Title:</strong> ${title}</div>
+        <div><strong>🕒 Time:</strong> ${startTime} - ${endTime}</div>
+        <div><strong>📁 Category:</strong> ${category}</div>
+        ${!isRecurring ? `<div><strong>📅 Date:</strong> ${date}</div>` : ''}
+        ${isRecurring ? `<div><strong>🔁 Type:</strong> Recurring block</div>` : ''}
+    `;
+    
+    // Show confirmation modal
+    confirmModal.classList.add('active');
+}
+
+function closeDeleteConfirmModal(event) {
+    if (!event || event.target.id === 'deleteConfirmModal' || event.target.classList.contains('modal-close')) {
+        document.getElementById('deleteConfirmModal').classList.remove('active');
+    }
+}
+
+function confirmDeleteBlock() {
+    const modal = document.getElementById('blockModal');
+    const blockData = {
+        block_title: modal.dataset.blockTitle,
+        block_date: modal.dataset.blockDate,
+        block_start_time: modal.dataset.blockStartTime,
+        block_end_time: modal.dataset.blockEndTime,
+        is_recurring: modal.dataset.isRecurring
+    };
+    
+    console.log('Deleting block with data:', blockData); // Debug log
+    
+    // Show loading state
+    const deleteBtn = modal.querySelector('.btn-delete');
+    const originalText = deleteBtn.innerHTML;
+    deleteBtn.innerHTML = '🔄 Deleting...';
+    deleteBtn.disabled = true;
+    
+    // Create form data
+    const formData = new FormData();
+    Object.keys(blockData).forEach(key => {
+        formData.append(key, blockData[key]);
+    });
+    formData.append('ajax', '1');
+    
+    console.log('Sending FormData with entries:'); // Debug log
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+    }
+    
+    fetch('{{ url_for("productivity.delete_time_block") }}', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Delete response:', data); // Debug log
+        
+        if (data.success) {
+            // Show success message first
+            showNotification('✅ Block deleted successfully!', 'success');
+            
+            // Close modal (which will reset the button)
+            closeDeleteConfirmModal();
+            closeModal();
+            
+            // Reload current view without page refresh
+            setTimeout(() => {
+                if (currentView === 'monthly') {
+                    loadMonthlyView();
+                } else {
+                    loadWeeklyView();
+                }
+            }, 500); // Small delay to ensure server processing is complete
+            
+        } else {
+            console.error('Server returned error:', data.message);
+            showNotification('❌ Error: ' + data.message, 'error');
+            // Reset button state on error
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting block:', error);
+        showNotification('❌ Error deleting block. Please try again.', 'error');
+        // Reset button state on error
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+    });
+}
+
+function toggleRecurringOptionsModal() {
+    const checkbox = document.getElementById('isRecurringModal');
+    const options = document.getElementById('recurringOptionsModal');
+    options.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+let selectedDaysModal = [];
+
+function toggleDayModal(button) {
+    button.classList.toggle('selected');
+    const day = button.getAttribute('data-day');
+    
+    if (button.classList.contains('selected')) {
+        if (!selectedDaysModal.includes(day)) {
+            selectedDaysModal.push(day);
+        }
+    } else {
+        selectedDaysModal = selectedDaysModal.filter(d => d !== day);
+    }
+    
+    document.getElementById('recurringDaysModal').value = selectedDaysModal.join(',');
+}
+
+// Handle form submission
+document.getElementById('blockFormModal').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{{ url_for("productivity.add_time_block") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            closeAddBlockModal();
+            // Reload current view
+            if (currentView === 'monthly') {
+                loadMonthlyView();
+            } else {
+                loadWeeklyView();
+            }
+        } else {
+            showNotification('❌ Error adding block. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('❌ Error adding block. Please try again.', 'error');
+    });
+});
+
+// Notification system
+function showNotification(message, type = 'success') {
+    // Remove any existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = message;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after duration (longer for error messages)
+    const duration = type === 'error' ? 5000 : 3000;
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOutRight 0.4s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 400);
+        }
+    }, duration);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial view based on data availability
+    if (document.getElementById('calendarDays').children.length === 0) {
+        loadMonthlyView();
+    }
+});
+</script>
+
+<style>
+/* Modal styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+}
+
+.modal-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #3d5a80 0%, #2c4662 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: min(600px, 90vw);
+    max-height: 90vh;
+    width: 90%;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #4a6fa5;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e8f4f8;
+    margin: 0;
+}
+
+.modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #e8f4f8;
+    font-size: 1.5rem;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    color: #e8f4f8;
+    line-height: 1.6;
+}
+
+.modal-body > div {
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.modal-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #4a6fa5;
+}
+
+.modal-btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+}
+
+.btn-delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Notification animations */
+@keyframes slideInRight {
+    0% {
+        transform: translateX(100%) scale(0.8);
+        opacity: 0;
+    }
+    60% {
+        transform: translateX(-5%) scale(1.02);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    0% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(120%) scale(0.9);
+        opacity: 0;
+    }
+}
+
+/* Additional utility classes */
+.notification {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1.2rem 1.8rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+    font-weight: 600;
+    min-width: 280px;
+    max-width: 400px;
+    text-align: center;
+    animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 1rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.notification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.notification:hover::before {
+    left: 100%;
+}
+
+.notification {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    box-shadow: 
+        0 8px 32px rgba(76, 175, 80, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 
+        0 8px 32px rgba(231, 76, 60, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+/* Confirmation Modal Styles */
+.confirmation-modal {
+    max-width: min(500px, 90vw);
+}
+
+.confirmation-content {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.warning-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.confirmation-message {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #e8f4f8;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+.block-summary {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #4a6fa5;
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.block-summary strong {
+    color: #7B9FBE;
+}
+
+.block-summary div {
+    margin: 0.5rem 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.warning-text {
+    color: #ff9999;
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-top: 1rem;
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.confirmation-actions .modal-btn {
+    width: auto;
+    min-width: 140px;
+    flex: 1;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-confirm-delete {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    animation: pulse-danger 2s infinite;
+}
+
+.btn-confirm-delete:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+    animation: none;
+}
+
+@keyframes pulse-danger {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+/* Responsive adjustments for confirmation modal */
+@media (max-width: 576px) {
+    .confirmation-actions {
+        flex-direction: column;
+    }
+    
+    .warning-icon {
+        font-size: 2.5rem;
+    }
+    
+    .confirmation-message {
+        font-size: 1.1rem;
+    }
+}
+</style>
+{% endblock %}
